@@ -1,6 +1,11 @@
 project(CBRMain)
-set(INC "")
-set(SRC src/main.cpp)
+
+set(INC_DIR "inc/CBRMain")
+
+set(INC ${INC_DIR}/find_black_squares.h ${INC_DIR}/logging.h)
+set(SRC src/main.cpp src/find_black_squares.cpp src/logging.cpp)
+
+include_directories(inc/CBRMain/)
 
 ADD_EXECUTABLE(CBRMain ${SRC} ${INC})
 TARGET_LINK_LIBRARIES(CBRMain ${OpenCV_LIBS})
