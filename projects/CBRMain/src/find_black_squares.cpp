@@ -2,6 +2,7 @@
 #include "../inc/CBRMain/logging.h"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
+#include "opencv2/calib3d.hpp"
 #include <vector>
 #include <algorithm>
 
@@ -9,13 +10,8 @@
 namespace cbr
 {
 
-void rotation_experiment()
-{
-	// initialize chessboard and rotate it
-}
 
-
-constexpr int thresh = 50, N = 11;
+constexpr int thresh = 200, N = 1;
 
 double angle(const cv::Point& pt1, const cv::Point& pt2, const cv::Point& pt0)
 {
@@ -36,73 +32,49 @@ std::vector<std::vector<cv::Point>> findSquares(const cv::Mat& image)
 	std::vector<std::vector<cv::Point>> contours;
 
 
-	for( int c = 0; c < 3; c++ )
-    {
-        int ch[] = {c, 0};
+	for( int c = 0; c < 3; c++ ) {
+        const int ch[] = {c, 0};
         cv::mixChannels(&timg, 1, &gray0, 1, ch, 1);
 
         // try several threshold levels
         for( int l = 0; l < N; l++ )
         {
-            // hack: use Canny instead of zero threshold level.
-            // Canny helps to catch squares with gradient shading
-            if( l == 0 )
-            {
-                // apply Canny. Take the upper threshold from slider
-                // and set the lower to 0 (which forces edges merging)
+            if( l == 0 ) {
                 cv::Canny(gray0, gray, 0, thresh, 5);
-                // dilate canny output to remove potential
-                // holes between edge segments
                 cv::dilate(gray, gray, cv::Mat(), cv::Point(-1,-1));
             }
-            else
-            {
-                // apply threshold if l!=0:
-                //     tgray(x,y) = gray(x,y) < (l+1)*255/N ? 255 : 0
+            else {
                 gray = gray0 >= (l+1)*255/N;
             }
 
-            // find contours and store them all as a list
             cv::findContours(gray, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
             std::vector<cv::Point> approx;
 
-            // test each contour
-            for( size_t i = 0; i < contours.size(); i++ )
+            for ( const auto& contour : contours )
             {
-                // approximate contour with accuracy proportional
-                // to the contour perimeter
-                cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true)*0.02, true);
+                cv::approxPolyDP(cv::Mat(contour), approx, cv::arcLength(cv::Mat(contour), true)*0.02, true);
 
-                // square contours should have 4 vertices after approximation
-                // relatively large area (to filter out noisy contours)
-                // and be convex.
-                // Note: absolute value of an area is used because
-                // area may be positive or negative - in accordance with the
-                // contour orientation
-                if( approx.size() == 4 &&
+                if ( approx.size() == 4 &&
                     std::fabs(cv::contourArea(cv::Mat(approx))) > 1000 &&
-                    cv::isContourConvex(cv::Mat(approx)) )
-                {
+                    cv::isContourConvex(cv::Mat(approx)) ) {
                     double maxCosine = 0;
 
-                    for( int j = 2; j < 5; j++ )
+                    for ( int j = 2; j < 5; j++ )
                     {
                         // find the maximum cosine of the angle between joint edges
-                        double cosine = std::fabs(angle(approx[j%4], approx[j-2], approx[j-1]));
+                        const double cosine = std::fabs(angle(approx[j%4], approx[j-2], approx[j-1]));
                         maxCosine = std::max(maxCosine, cosine);
                     }
 
-                    // if cosines of all angles are small
-                    // (all angles are ~90 degree) then write quandrange
-                    // vertices to resultant sequence
-                    if( maxCosine < 0.3 )
+                    if ( maxCosine < 0.3 ) {
                         squares.push_back(approx);
+                    }
                 }
             }
         }
     }
-
+    LOG("found " << squares.size() << " squares.");
     return squares;
 }
 
@@ -123,11 +95,9 @@ cv::Mat create_thresholded_image(const cv::Mat& image)
 	return thres;
 }
 
-
-
 void find_board(const cv::Mat& image)
 {
-	const int nRows = image.rows;
+    const int nRows = image.rows;
 	const int nCols = image.cols;
 
 	const auto thresholdedImage = create_thresholded_image(image);
@@ -136,56 +106,44 @@ void find_board(const cv::Mat& image)
 	const float rowDelta = float(nRows) / nIntersections;
 	const float colDelta = float(nCols) / nIntersections;
 
-	cv::namedWindow(__FUNCTION__);
-
-	//cv::Mat grayScale;
-	//cv::cvtColor(image, grayScale, cv::COLOR_RGB2GRAY);
+    cv::namedWindow(__FUNCTION__);
+    
+    const int imageSize = 800;
+    const int boardSize = imageSize / 2;
+    const int halfBoardSize = boardSize / 2;
+    cv::Mat whiteImage = cv::Mat::ones(imageSize, imageSize, image.type());
+    std::vector<cv::Point2f> destinationPoints{
+        {halfBoardSize, halfBoardSize},
+        {halfBoardSize + boardSize, halfBoardSize},
+        {halfBoardSize + boardSize, halfBoardSize + boardSize},
+        {halfBoardSize, halfBoardSize + boardSize}
+    };
 
 	const std::vector<cv::Scalar> colors{cv::Scalar(255.0, 0.0, 0.0),
 	                                     cv::Scalar(0.0, 255.0, 0.0),
 	                                     cv::Scalar(0.0, 0.0, 255.0)};
-
-
 	int colorIndex = 0;
-	const auto squares = findSquares(image);
-	auto imageCpy = image.clone();
-	for (const auto& tier : squares) {
+    const auto squares = findSquares(image);
+    for (const auto& square : squares) {
+        const auto homography = cv::findHomography(squares[4], destinationPoints);
+
+        cv::Mat im_out;
+        cv::warpPerspective(image, im_out, homography, whiteImage.size());
+
+        cv::imshow("Warped Source Image", im_out);
+        cv::waitKey();
+    }
+	/* auto imageCpy = image.clone();
+	for (const auto& square : squares) {
 		const auto color = colors[colorIndex];
 		colorIndex = (colorIndex == 2) ? 0 : (colorIndex + 1);
-		cv::line(imageCpy, tier[0], tier[1], color);
-		cv::line(imageCpy, tier[1], tier[2], color);
-		cv::line(imageCpy, tier[2], tier[3], color);
-		cv::line(imageCpy, tier[3], tier[0], color);
-		/*for (const auto& square : tier) {
-			const auto color = cv::Scalar(0.0, 0.0, 255.0);
-			cv::circle(imageCpy, square, 3, color, -1);
-		}*/
+		cv::line(imageCpy, square[0], square[1], color);
+		cv::line(imageCpy, square[1], square[2], color);
+		cv::line(imageCpy, square[2], square[3], color);
+		cv::line(imageCpy, square[3], square[0], color);
 	}
 
-	/*
-	LOG(DESC(image.size()));
-	LOG(DESC(rowDelta));
-	LOG(DESC(colDelta));
-
-	auto imageCpy = image.clone();
-	for (int i = 0; i < nIntersections; ++i) {
-		cv::Point center;
-		center.y = int(rowDelta / 2.0f + i * rowDelta);
-		for (int j = 0; j < nIntersections;++j) {
-			center.x = int(colDelta / 2.0f + j * colDelta);
-			//LOG("adding circle to center " << center);
-			const auto color = (i == 11 && j == 11) ? cv::Scalar(0.0, 255.0, 0.0) : cv::Scalar(0.0, 0.0, 255.0);
-			cv::circle(imageCpy, center, 3, color, -1);
-
-			if (i == 11 && j == 11) {
-				LOG(center);
-			}
-		}
-	}
-	*/
-
-	cv::imshow(__FUNCTION__, imageCpy);
-
+	cv::imshow(__FUNCTION__, imageCpy); */
 }
 
 }
