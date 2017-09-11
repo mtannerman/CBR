@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
 
-
 project(CBR)
-
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PROJECTS
-	CBRMain)
+	CBRMain
+	fw
+	imgproc
+	recog
+	math_utils)
 
 
 set(OpenCV_DIR "/home/timarmate/opencv/opencv")

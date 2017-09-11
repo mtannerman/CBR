@@ -2,8 +2,9 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include "../inc/CBRMain/find_black_squares.h"
-#include "../inc/CBRMain/board_rotation_experiment.h"
+#include "imgproc/find_black_squares.h"
+#include "imgproc/board_rotation_experiment.h"
+#include "imgproc/homography.h"
 
 int main()
 {
@@ -14,7 +15,19 @@ int main()
 	//cv::namedWindow("DisplayWindow");
 	//cv::imshow("DisplayWindow", image);
 
-	cbr::find_board(image);
+	cv::Mat grayScaleImage;
+	cv::cvtColor(image, grayScaleImage, CV_RGB2GRAY);
+
+	const auto squares = cbr::find_squares(image);
+	const auto homographyOutput = cbr::Homography(image, squares[11]).Apply();
+
+	cv::namedWindow("DisplayWindow");
+	cv::imshow("DisplayWindow", image);
+
+	cv::namedWindow("DisplayWindow2");
+	cv::imshow("DisplayWindow2", homographyOutput);
+
+	// cbr::find_board(image);
 	//cbr::board_rotation_experiment();
 
 	cv::waitKey(0);
