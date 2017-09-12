@@ -1,6 +1,10 @@
 #pragma once
 #include <type_traits>
 #include <functional>
+#include <iterator>
+#include <vector>
+#include <string>
+#include <sstream>
 
 namespace cbr
 {
@@ -31,14 +35,16 @@ decltype(auto) fsum(const Coll& collection, F f)
     return sum;
 }
 
+
+
 template <typename It, typename F, typename P>
 decltype(auto) fmap_if(
-    const It & itBegin,
-    const It & itEnd,
-    const F & mapper,
-    const P & predicate)
+    const It& itBegin,
+    const It& itEnd,
+    const F& mapper,
+    const P& predicate)
 {
-    using T = typename std::result_of<F(typename const std::iterator_traits<It>::value_type &)>::type;
+    using T = typename std::result_of<F(typename std::iterator_traits<It>::value_type)>::type;
 
     if (itBegin == itEnd) {
         return std::vector<T>();
@@ -56,11 +62,15 @@ decltype(auto) fmap_if(
     return newColl;
 }
 
+
+
 template <typename C, typename F, typename P>
 decltype(auto) fmap_if(const C & collection, const F & mapper, const P & predicate)
 {
     return fmap_if(begin(collection), end(collection), mapper, predicate);
 }
+
+
 
 template <typename C, typename Pred>
 void ffilter(C & collection, const Pred & predicate) {
@@ -85,7 +95,7 @@ decltype(auto) fmap(
     const It & itEnd,
     const F & function)
 {
-    using T = typename std::result_of<F(typename const std::iterator_traits<It>::value_type &)>::type;
+    using T = typename std::result_of<F(typename std::iterator_traits<It>::value_type)>::type;
 
     if (itBegin == itEnd) {
         return std::vector<T>();
@@ -107,12 +117,14 @@ decltype(auto) fmap(const C & collection, const F & function)
     return fmap(begin(collection), end(collection), function);
 }
 
+
+
 template <typename C, typename F>
 decltype(auto) average_difference(
     const C & collection,
     const F & difference)
 {
-    using T = std::result_of<F(typename const C::value_type &, typename const C::value_type &)>::type;
+    using T = typename std::result_of<F(typename C::value_type, typename C::value_type)>::type;
     const auto & size = collection.size();
     if (size < 2) {
         return T(0);
@@ -129,12 +141,14 @@ decltype(auto) average_difference(
     return (sum / T(size - 1));
 }
 
+
+
 template <typename C, typename F>
 decltype(auto) difference_sum(
     const C & collection,
     const F & difference)
 {
-    using T = std::result_of<F(typename const C::value_type &, typename const C::value_type &)>::type;
+    using T = typename std::result_of<F(typename C::value_type, typename C::value_type)>::type;
 
     const auto & size = collection.size();
 
@@ -154,12 +168,14 @@ decltype(auto) difference_sum(
     return sum;
 }
 
+
+
 template <typename C, typename F>
 decltype(auto) difference_vector(
     const C & collection,
     const F & difference)
 {
-        using T = std::result_of<F(typename const C::value_type &, typename const C::value_type &)>::type;
+        using T = typename std::result_of<F(typename C::value_type, typename C::value_type)>::type;
         const auto & size = collection.size();
         if (size < 2) {
         return std::vector<T>();  // fails if T is not default constructible
@@ -178,17 +194,17 @@ decltype(auto) difference_vector(
     return differenceVector;
 }
 
-/*
+
 template <typename C1, typename C2, typename F>
 decltype(auto) fcombine(const C1 & collection1, const C2 & collection2, const F & f)
 {
-using T = std::result_of<F(typename const C1::value_type &, typename const C2::value_type &)>::type;
+    using T = typename std::result_of<F(typename C1::value_type, typename C2::value_type)>::type;
     
-    const size_t & size1 = collection1.size();
-    const size_t & size2 = collection2.size();
+    const size_t size1 = collection1.size();
+    const size_t size2 = collection2.size();
     
     if (size1 != size2) {
-        THROW(fw::AssertionException, "size mismatch");
+        throw std::runtime_error("size mismatch");
     }
     
     std::vector<T> combined;
@@ -207,9 +223,15 @@ using T = std::result_of<F(typename const C1::value_type &, typename const C2::v
     
     return combined;
 }
-*/
+
+
+
 template<typename Collection, typename ToStringF>
-std::string collection_to_string(const Collection& coll, const ToStringF toString, const std::string delim = ", ", const std::string leftBoundary = "", const std::string rightBoundary = "")
+std::string collection_to_string(const Collection& coll, 
+    const ToStringF toString, 
+    const std::string delim = ", ", 
+    const std::string leftBoundary = "", 
+    const std::string rightBoundary = "")
 {
     if (size(coll) == 0) {
         return "";
