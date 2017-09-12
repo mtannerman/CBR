@@ -3,10 +3,12 @@ PROJECT(fw)
 SET(FW_INC
 	inc/fw/time.h
 	inc/fw/archive_collection.h
+	inc/fw/viz2d.h
 	inc/fw/logging.h)
 
 SET(FW_SRC
     src/logging.cpp
+    src/viz2d.cpp
     src/time.cpp)
     
 SET(UTF8_INC

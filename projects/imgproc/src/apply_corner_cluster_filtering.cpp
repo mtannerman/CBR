@@ -4,6 +4,13 @@
 #include <cstdint>
 #include "math_utils/math.h"
 
+#define CBR_DEBUG_CORNER_CLUSTER_FILTERING
+
+#ifdef CBR_DEBUG_CORNER_CLUSTER_FILTERING
+#include "fw/logging.h"
+#include "fw/viz2d.h"
+#endif
+
 namespace cbr 
 {
 
@@ -100,12 +107,35 @@ std::vector<cv::Point2f> find_cluster_corners(const std::vector<std::vector<cv::
         clusterCenters.push_back(cornerCluster.mean);
     }
 
+#ifdef CBR_DEBUG_CORNER_CLUSTER_FILTERING
+    viz::Visualizer2D vizWindow(STR("dbg" << __FUNCTION__));
+    cv::Point maxAxis;
+    for (const auto& corner : corners) {
+        if (corner.x > maxAxis.x) {
+            maxAxis.x = corner.x;
+        }
+
+        if (corner.y > maxAxis.y) {
+            maxAxis.y = corner.y;
+        }
+    }
+    maxAxis *= 1.1;
+
+    const auto image = cv::Mat(cv::Size(maxAxis.x, maxAxis.y), 0, cv::Scalar(0));
+    vizWindow.AddImage(image);
+    for (const auto& corner : corners) {
+        vizWindow.AddCircle(corner, 2);
+    }
+    vizWindow.Spin();
+#endif
+
     return clusterCenters;
 }
 
 std::vector<std::vector<cv::Point>> apply_cluster_filtering(
     const std::vector<std::vector<cv::Point>>& squares)
 {
+    const auto whatever = find_cluster_corners(squares);
     return std::vector<std::vector<cv::Point>>();
 }
 

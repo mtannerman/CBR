@@ -5,6 +5,7 @@
 #include "imgproc/find_black_squares.h"
 #include "imgproc/board_rotation_experiment.h"
 #include "imgproc/homography.h"
+#include "imgproc/apply_corner_cluster_filtering.h"
 
 int main()
 {
@@ -19,13 +20,14 @@ int main()
 	cv::cvtColor(image, grayScaleImage, CV_RGB2GRAY);
 
 	const auto squares = cbr::find_squares(image);
-	const auto homographyOutput = cbr::Homography(image, squares[11]).Apply();
+	const auto whatever = cbr::apply_cluster_filtering(squares);
+	// const auto homographyOutput = cbr::Homography(image, squares[11]).Apply();
 
-	cv::namedWindow("DisplayWindow");
-	cv::imshow("DisplayWindow", image);
+	// cv::namedWindow("DisplayWindow");
+	// cv::imshow("DisplayWindow", image);
 
-	cv::namedWindow("DisplayWindow2");
-	cv::imshow("DisplayWindow2", homographyOutput);
+	// cv::namedWindow("DisplayWindow2");
+	// cv::imshow("DisplayWindow2", homographyOutput);
 
 	// cbr::find_board(image);
 	//cbr::board_rotation_experiment();
