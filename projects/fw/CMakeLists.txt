@@ -1,10 +1,13 @@
 PROJECT(fw)
 
 SET(FW_INC
-    inc/fw/logging.h)
+	inc/fw/time.h
+	inc/fw/archive_collection.h
+	inc/fw/logging.h)
 
 SET(FW_SRC
-    src/logging.cpp)
+    src/logging.cpp
+    src/time.cpp)
     
 SET(UTF8_INC
 	inc/utf8/core.h	

@@ -378,15 +378,4 @@ namespace cereal
   } // namespace detail
 } // namespace cereal
 
-#include "fw/build.h"
-
-#ifdef FW_SHARED
-namespace cereal {
-	namespace detail {
-		FW_TEMPLATE_EXTERN template class FW_API SoCreator<Versions>;
-		FW_TEMPLATE_EXTERN template class FW_API SoMutex<Versions>;
-	}
-}
-#endif
-
 #endif // CEREAL_DETAILS_HELPERS_HPP_
