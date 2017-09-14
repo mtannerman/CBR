@@ -2,10 +2,11 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
-#include "imgproc/find_black_squares.h"
+#include "imgproc/imgproc.h"
 #include "imgproc/board_rotation_experiment.h"
 #include "imgproc/homography.h"
 #include "imgproc/apply_corner_cluster_filtering.h"
+#include "imgproc/find_square_contours.h"
 
 int main()
 {

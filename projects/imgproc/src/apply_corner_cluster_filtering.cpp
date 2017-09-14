@@ -123,9 +123,10 @@ std::vector<cv::Point2f> find_cluster_corners(const std::vector<std::vector<cv::
 
     const auto image = cv::Mat(cv::Size(maxAxis.x, maxAxis.y), 0, cv::Scalar(0));
     vizWindow.AddImage(image);
-    for (const auto& corner : corners) {
-        vizWindow.AddCircle(corner, 2);
+    for (const auto& c : cornerClusters) {
+        vizWindow.AddCircle(c.mean, 5, cv::Scalar(255, 0, 0));
     }
+
     vizWindow.Spin();
 #endif
 
