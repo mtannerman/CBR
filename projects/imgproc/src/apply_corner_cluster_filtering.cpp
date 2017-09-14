@@ -4,7 +4,7 @@
 #include <cstdint>
 #include "math_utils/math.h"
 
-#define CBR_DEBUG_CORNER_CLUSTER_FILTERING
+// #define CBR_DEBUG_CORNER_CLUSTER_FILTERING
 
 #ifdef CBR_DEBUG_CORNER_CLUSTER_FILTERING
 #include "fw/logging.h"
@@ -75,7 +75,7 @@ double compute_square_edge_length_average(const std::vector<std::vector<cv::Poin
     return edgeLengthSum / double(squares.size()) / 4.0;
 }
 
-std::vector<cv::Point2f> find_cluster_corners(const std::vector<std::vector<cv::Point>>& squares)
+std::vector<cv::Point2f> find_corner_cluster_centers(const std::vector<std::vector<cv::Point>>& squares)
 {
     const auto corners = squares_to_corners(squares);
     const double squareEdgeLengthAverage = compute_square_edge_length_average(squares);
@@ -133,10 +133,22 @@ std::vector<cv::Point2f> find_cluster_corners(const std::vector<std::vector<cv::
     return clusterCenters;
 }
 
+cv::Point compute_square_center(const std::vector<cv::Point>& square) 
+{
+    return fsum(square) / 4;
+}
+
+std::vector<std::vector<cv::Point>> create_unique_squares_from_corner_cluster_centers(
+    const std::vector<std::vector<cv::Point>>& squares,
+     const std::vector<cv::Point2f>& cornerClusterCenters)
+{
+    std::vector<std::vector<cv::Point>> uniqueSquares;
+}
+
 std::vector<std::vector<cv::Point>> apply_cluster_filtering(
     const std::vector<std::vector<cv::Point>>& squares)
 {
-    const auto whatever = find_cluster_corners(squares);
+    const auto cornerClusters = find_corner_cluster_centers(squares);
     return std::vector<std::vector<cv::Point>>();
 }
 
