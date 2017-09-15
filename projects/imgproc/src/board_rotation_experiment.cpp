@@ -2,7 +2,7 @@
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
-#include "fw/logging.h"
+#include "common/logging.h"
 #include <math.h>
 
 namespace cbr

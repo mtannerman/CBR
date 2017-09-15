@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PROJECTS
 	CBRMain
-	fw
+	common
 	imgproc
 	recog
 	math_utils)

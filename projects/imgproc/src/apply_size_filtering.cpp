@@ -1,7 +1,7 @@
 #include "imgproc/apply_size_filtering.h"
 
 #include <utility>
-#include "fw/logging.h"
+#include "common/logging.h"
 #include "math_utils/math.h"
 
 namespace cbr

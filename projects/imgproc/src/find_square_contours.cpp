@@ -1,5 +1,5 @@
 #include "imgproc/find_square_contours.h"
-#include "fw/logging.h"
+#include "common/logging.h"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/calib3d.hpp"

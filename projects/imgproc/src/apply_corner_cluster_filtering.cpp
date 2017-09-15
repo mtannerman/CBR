@@ -7,8 +7,8 @@
 // #define CBR_DEBUG_CORNER_CLUSTER_FILTERING
 
 #ifdef CBR_DEBUG_CORNER_CLUSTER_FILTERING
-#include "fw/logging.h"
-#include "fw/viz2d.h"
+#include "common/logging.h"
+#include "common/viz2d.h"
 #endif
 
 namespace cbr 

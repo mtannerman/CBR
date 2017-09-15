@@ -2,7 +2,7 @@ PROJECT(math_utils)
 
 
 INCLUDE_DIRECTORIES(inc)
-INCLUDE_DIRECTORIES(../fw/inc)
+INCLUDE_DIRECTORIES(../common/inc)
 
 set(_src_root_path "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(_inc_root_path "${CMAKE_CURRENT_SOURCE_DIR}/inc/math_utils")
@@ -35,4 +35,4 @@ string(REPLACE "/" "\\" _group_path "${_source_path_rel}")
 source_group("${_group_path}" FILES "${_source}")
 endforeach()
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} fw ${OpenCV_LIBS})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} common ${OpenCV_LIBS})
