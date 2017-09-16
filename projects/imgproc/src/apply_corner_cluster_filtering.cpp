@@ -2,7 +2,7 @@
 #include <utility>
 #include <limits>
 #include <cstdint>
-#include "math_utils/math.h"
+#include "math_utils/functional.h"
 
 #define CBR_DEBUG_CORNER_CLUSTER_FILTERING
 

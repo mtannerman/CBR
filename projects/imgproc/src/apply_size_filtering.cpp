@@ -2,7 +2,7 @@
 
 #include <utility>
 #include "common/logging.h"
-#include "math_utils/math.h"
+#include "math_utils/functional.h"
 
 namespace cbr
 {
