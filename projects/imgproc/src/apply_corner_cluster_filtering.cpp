@@ -164,10 +164,10 @@ bool square_center_already_taken(
     const cv::Point2f& center,
      std::vector<cv::Point2f>& squareCenters)
 {
-    // TODO
+    return std::find(squareCenters.begin(), squareCenters.end(), center) != squareCenters.end();
 }
 
-std::vector<std::vector<cv::Point>> create_unique_squares_from_corner_cluster_centers(
+std::vector<std::vector<cv::Point>> collect_unique_squares(
     const std::vector<std::vector<cv::Point>>& squares,
      const std::vector<cv::Point2f>& cornerClusterCenters)
 {
@@ -176,8 +176,12 @@ std::vector<std::vector<cv::Point>> create_unique_squares_from_corner_cluster_ce
     for (auto square : squares) {
         adjust_square_corners_to_closest_cluster(cornerClusterCenters, square);
         const auto adjustedCenter = compute_square_center(square);
-
+        if (!square_center_already_taken(adjustedCenter, squareCenters)) {
+            uniqueSquares.push_back(square);
+            squareCenters.push_back(adjustedCenter);
+        }
     }
+
     return uniqueSquares;
 }
 
@@ -185,7 +189,9 @@ std::vector<std::vector<cv::Point>> apply_cluster_filtering(
     const std::vector<std::vector<cv::Point>>& squares)
 {
     const auto cornerClusters = find_corner_cluster_centers(squares);
-    return std::vector<std::vector<cv::Point>>();
+    const auto uniqueSquares = 
+        collect_unique_squares(squares, cornerClusters);
+    return uniqueSquares;
 }
 
 }
