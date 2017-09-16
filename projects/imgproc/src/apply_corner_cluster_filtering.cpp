@@ -151,15 +151,20 @@ cv::Point find_closest_cluster(
     return cv::Point(*closestClusterCenter);
 }
 
-std::vector<cv::Point> adjust_square_corners_to_closest_cluster(
+void adjust_square_corners_to_closest_cluster(
     const std::vector<cv::Point2f>& cornerClusterCenters,
-    const std::vector<cv::Point>& square) 
+    std::vector<cv::Point>& square) 
 {
-    for (const auto& corner : square) {
-
+    for (auto& corner : square) {
+        corner = find_closest_cluster(cornerClusterCenters, corner);
     }
+}
 
-    return std::vector<cv::Point>();
+bool square_center_already_taken(
+    const cv::Point2f& center,
+     std::vector<cv::Point2f>& squareCenters)
+{
+    // TODO
 }
 
 std::vector<std::vector<cv::Point>> create_unique_squares_from_corner_cluster_centers(
@@ -168,7 +173,11 @@ std::vector<std::vector<cv::Point>> create_unique_squares_from_corner_cluster_ce
 {
     std::vector<std::vector<cv::Point>> uniqueSquares;
     std::vector<cv::Point2f> squareCenters;
-    // for (const )
+    for (auto square : squares) {
+        adjust_square_corners_to_closest_cluster(cornerClusterCenters, square);
+        const auto adjustedCenter = compute_square_center(square);
+
+    }
     return uniqueSquares;
 }
 

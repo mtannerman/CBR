@@ -75,7 +75,7 @@ std::vector<std::vector<cv::Point>> find_squares(const cv::Mat& image)
             }
         }
     }
-    squares = apply_size_filtering(squares, image.rows, image.cols);
+    squares = apply_size_filtering(squares, image.size());
     return squares;
 }
 

@@ -21,10 +21,10 @@ double approximate_square_area(const std::vector<cv::Point>& square)
 }
 
 bool is_square_too_large_compared_to_image(
-    const std::vector<cv::Point>& square, 
-    const int nRows, const int nCols)
+    const std::vector<cv::Point>& square,
+    const cv::Size& imageSize)
 {
-    const auto imageArea = double(nRows * nCols);
+    const auto imageArea = double(imageSize.width * imageSize.height);
     const auto approximateSquareArea = approximate_square_area(square);
     return approximateSquareArea > (imageArea / 10.0);
 }
@@ -56,13 +56,13 @@ bool is_square_area_difference_too_large(
 }
 
 std::vector<std::vector<cv::Point>> apply_size_filtering(
-    const std::vector<std::vector<cv::Point>>& squares, 
-    const int nImageRows, const int nImageCols)
+    const std::vector<std::vector<cv::Point>>& squares,
+    const cv::Size& imageSize)
 {
     auto filteredSquares = squares;
 
     for (auto it = filteredSquares.begin(); it != filteredSquares.end();) {
-        if (is_square_too_large_compared_to_image(*it, nImageRows, nImageCols)) {
+        if (is_square_too_large_compared_to_image(*it, imageSize)) {
             it = filteredSquares.erase(it);
         }
         else {
@@ -70,10 +70,8 @@ std::vector<std::vector<cv::Point>> apply_size_filtering(
         }
     }
 
-    // LOG("image size: " << (nImageRows * nImageCols));
     const auto squareAreaBounds = compute_square_area_bounds(squares);
     for (auto it = filteredSquares.begin(); it != filteredSquares.end();) {
-        // LOG("square size: " << approximate_square_area(*it));
         if (is_square_area_difference_too_large(*it, squareAreaBounds)) {
             it = filteredSquares.erase(it);
         }
@@ -81,8 +79,6 @@ std::vector<std::vector<cv::Point>> apply_size_filtering(
             ++it;
         }
     }
-
-    // LOG("filtered " << (squares.size() - filteredSquares.size()) << " images");
 
     return filteredSquares;
 }
