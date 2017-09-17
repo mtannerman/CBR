@@ -3,13 +3,9 @@
 #include <limits>
 #include <cstdint>
 #include "math_utils/functional.h"
-
-#define CBR_DEBUG_CORNER_CLUSTER_FILTERING
-
-#ifdef CBR_DEBUG_CORNER_CLUSTER_FILTERING
 #include "common/logging.h"
 #include "common/viz2d.h"
-#endif
+#include "common/config.h"
 
 namespace cbr 
 {
@@ -107,28 +103,29 @@ std::vector<cv::Point2f> find_corner_cluster_centers(const std::vector<std::vect
         clusterCenters.push_back(cornerCluster.mean);
     }
 
-#ifdef CBR_DEBUG_CORNER_CLUSTER_FILTERING
-    viz::Visualizer2D vizWindow(STR("dbg" << __FUNCTION__));
-    cv::Point maxAxis;
-    for (const auto& corner : corners) {
-        if (corner.x > maxAxis.x) {
-            maxAxis.x = corner.x;
+    if (Config::GetInstance().visualizeSquareFiltering) {
+        viz::Visualizer2D vizWindow(STR("dbg" << __FUNCTION__));
+        cv::Point maxAxis;
+        for (const auto& corner : corners) {
+            if (corner.x > maxAxis.x) {
+                maxAxis.x = corner.x;
+            }
+
+            if (corner.y > maxAxis.y) {
+                maxAxis.y = corner.y;
+            }
+        }
+        maxAxis *= 1.1;
+
+        const auto image = cv::Mat(cv::Size(maxAxis.x, maxAxis.y), 0, cv::Scalar(0));
+        vizWindow.AddImage(image);
+        for (const auto& c : cornerClusters) {
+            vizWindow.AddCircle(c.mean, 5, cv::Scalar(255, 0, 0));
         }
 
-        if (corner.y > maxAxis.y) {
-            maxAxis.y = corner.y;
-        }
-    }
-    maxAxis *= 1.1;
-
-    const auto image = cv::Mat(cv::Size(maxAxis.x, maxAxis.y), 0, cv::Scalar(0));
-    vizWindow.AddImage(image);
-    for (const auto& c : cornerClusters) {
-        vizWindow.AddCircle(c.mean, 5, cv::Scalar(255, 0, 0));
+        vizWindow.Spin();
     }
 
-    vizWindow.Spin();
-#endif
 
     return clusterCenters;
 }

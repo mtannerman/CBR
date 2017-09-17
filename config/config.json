@@ -1,9 +1,10 @@
 {
     "tests":
     [
-        "imgproc":
-        [
-            "square_overlap_test"
-        ]
+        "imgProcSquareOverlapTest"
+    ],
+    "visualize":
+    [
+        "squareOverlap"
     ]
 }

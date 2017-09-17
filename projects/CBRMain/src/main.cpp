@@ -8,9 +8,12 @@
 #include "imgproc/apply_corner_cluster_filtering.h"
 #include "imgproc/find_square_contours.h"
 #include "imgproc/test/square_filtering_test.h"
+#include "common/config.h"
 
 int main()
 {
+	CBR_INIT_CONFIG("/home/timarmate/Projects/CBR/config/config.json");
+
 	const std::string fileName = "/home/timarmate/Projects/CBR/input/3d/octagon/0.jpg";
 	auto image = cv::imread(fileName, CV_LOAD_IMAGE_COLOR);
 	cv::pyrDown(image, image);
