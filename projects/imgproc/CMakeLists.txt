@@ -36,4 +36,4 @@ string(REPLACE "/" "\\" _group_path "${_source_path_rel}")
 source_group("${_group_path}" FILES "${_source}")
 endforeach()
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} common ${OpenCV_LIBS} math_utils)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} math_utils common ${OpenCV_LIBS})

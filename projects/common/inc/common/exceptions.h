@@ -2,7 +2,9 @@
 
 #include "common/logging.h"
 
-#define ASSERT(expression, message) if (!(expression)) { ::cbr::throw_exception(STR(message), __FUNCTION__, __FILE__, __LINE__); }
+#define THROW(message) ::cbr::throw_exception(STR(message), __FUNCTION__, __FILE__, __LINE__);
+#define ASSERT(expression, message) if (!(expression)) { THROW(message); }
+#define THROW_IF(expression, message) if ((expression)) { THROW(message); }
 
 namespace cbr
 {

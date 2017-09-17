@@ -887,23 +887,6 @@ namespace cereal
   }
 } // namespace cereal
 
-#include "fw/build.h"
-
-#ifdef FW_SHARED
-#include <cereal/types/polymorphic.hpp>
-namespace cereal {
-	FW_TEMPLATE_EXTERN template class FW_API OutputArchive<XMLOutputArchive>;
-	FW_TEMPLATE_EXTERN template struct FW_API detail::OutputBindingMap<XMLOutputArchive>;
-	FW_TEMPLATE_EXTERN template class FW_API detail::SoCreator<detail::OutputBindingMap<XMLOutputArchive>>;
-	FW_TEMPLATE_EXTERN template class FW_API detail::SoMutex<detail::OutputBindingMap<XMLOutputArchive>>;
-
-	FW_TEMPLATE_EXTERN template class FW_API InputArchive<XMLInputArchive>;
-	FW_TEMPLATE_EXTERN template struct FW_API detail::InputBindingMap<XMLInputArchive>;
-	FW_TEMPLATE_EXTERN template class FW_API detail::SoCreator<detail::InputBindingMap<XMLInputArchive>>;
-	FW_TEMPLATE_EXTERN template class FW_API detail::SoMutex<detail::InputBindingMap<XMLInputArchive>>;
-}
-#endif
-
 // register archives for polymorphic support
 CEREAL_REGISTER_ARCHIVE(cereal::XMLOutputArchive)
 CEREAL_REGISTER_ARCHIVE(cereal::XMLInputArchive)

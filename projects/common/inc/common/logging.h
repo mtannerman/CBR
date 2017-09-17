@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 
 #define STR(expression) (((::std::ostringstream *)&(::std::ostringstream() << "" << expression))->str())
 #define LOG(msg) ::cbr::common_detail::Log(__FUNCTION__, STR(msg));

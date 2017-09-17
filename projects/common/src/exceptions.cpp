@@ -1,4 +1,7 @@
 #include "common/exceptions.h"
+#include "common/logging.h"
+#include <stdexcept>
+
 
 namespace cbr
 {
@@ -11,7 +14,7 @@ void throw_exception(const std::string &message,
             '\t' << "File: " << file << "\n" <<
             '\t' << "Line: " << line << "\n" <<
             '\t' << "Function: " << function << "\n" <<
-            '\t' << "Message: " << message;
+            '\t' << "Message: " << message);
 
         throw std::runtime_error(fullMessage);
 }

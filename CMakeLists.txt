@@ -7,10 +7,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PROJECTS
 	CBRMain
+	math_utils
 	common
 	imgproc
-	recog
-	math_utils)
+	recog)
 
 
 set(OpenCV_DIR "/home/timarmate/opencv/opencv")

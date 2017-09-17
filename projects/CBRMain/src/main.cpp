@@ -7,6 +7,7 @@
 #include "imgproc/homography.h"
 #include "imgproc/apply_corner_cluster_filtering.h"
 #include "imgproc/find_square_contours.h"
+#include "imgproc/test/square_filtering_test.h"
 
 int main()
 {
