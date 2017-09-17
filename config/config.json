@@ -1,0 +1,9 @@
+{
+    "tests":
+    [
+        "imgproc":
+        [
+            "square_overlap_test"
+        ]
+    ]
+}
