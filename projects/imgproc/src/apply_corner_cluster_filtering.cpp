@@ -6,6 +6,7 @@
 #include "common/logging.h"
 #include "common/viz2d.h"
 #include "common/config.h"
+#include "imgproc/test/square_filtering_test.h"
 
 namespace cbr 
 {
@@ -105,20 +106,7 @@ std::vector<cv::Point2f> find_corner_cluster_centers(const std::vector<std::vect
 
     if (Config::GetInstance().visualizeSquareFiltering) {
         viz::Visualizer2D vizWindow(STR("dbg" << __FUNCTION__));
-        cv::Point maxAxis;
-        for (const auto& corner : corners) {
-            if (corner.x > maxAxis.x) {
-                maxAxis.x = corner.x;
-            }
 
-            if (corner.y > maxAxis.y) {
-                maxAxis.y = corner.y;
-            }
-        }
-        maxAxis *= 1.1;
-
-        const auto image = cv::Mat(cv::Size(maxAxis.x, maxAxis.y), 0, cv::Scalar(0));
-        vizWindow.AddImage(image);
         for (const auto& c : cornerClusters) {
             vizWindow.AddCircle(c.mean, 5, cv::Scalar(255, 0, 0));
         }
@@ -188,6 +176,11 @@ std::vector<std::vector<cv::Point>> apply_cluster_filtering(
     const auto cornerClusters = find_corner_cluster_centers(squares);
     const auto uniqueSquares = 
         collect_unique_squares(squares, cornerClusters);
+
+    if (Config::GetInstance().testImgProcSquareOverlap) {
+        test::TEST_square_filtering_overlap(squares, uniqueSquares);
+    }
+
     return uniqueSquares;
 }
 

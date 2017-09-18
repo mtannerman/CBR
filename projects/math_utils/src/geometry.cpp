@@ -1,5 +1,6 @@
 #include "math_utils/geometry.h"
 #include "common/exceptions.h"
+#include "common/logging.h"
 
 namespace cbr {
 
@@ -24,7 +25,7 @@ cv::Matx31f compute_convex_combination_coefficients(
     coeffVector(1) = float(point.y);
     coeffVector(2) = 1.0f;
 
-    return coeffMatrix * coeffVector;
+    return coeffMatrix.inv() * coeffVector;
 }
     
 bool triangle_contains_point(
@@ -33,18 +34,25 @@ bool triangle_contains_point(
 {
     const std::array<cv::Point2f, 3> fpTriangle{cv::Point2f(triangle[0]), cv::Point2f(triangle[1]), cv::Point2f(triangle[2])};
     const auto coeffMatrix = create_coefficient_matrix(fpTriangle);
-    ASSERT(cv::determinant(coeffMatrix) > 1e-4, "triangle is degenerate");
+    ASSERT(std::abs(cv::determinant(coeffMatrix)) > 1e-4, "triangle is degenerate");
     const auto coeffVector = compute_convex_combination_coefficients(coeffMatrix, point);
     
-    return ((coeffVector(0) > 0.0f) && (coeffVector(1) > 0.0f) && (coeffVector(2) > 0.0f));
+    const auto allElementsArePositive = (coeffVector(0) >= 0.0f) && (coeffVector(1) >= 0.0f) && (coeffVector(2) >= 0.0f);
+    return allElementsArePositive;
 }
 
 bool square_contains_point(
     const std::vector<cv::Point>& square,
     const cv::Point& point)
 {
-    for (const int offset : {0, 1}) {
-        const std::array<cv::Point, 3> triangle{square[offset], square[offset + 1], square[offset + 2]};
+    for (const int pointLeftOut : {0, 2}) {
+        std::array<cv::Point, 3> triangle;
+        int triangleIndex = 0;
+        for (int i = 0; i < 4; ++i) {
+            if (i != pointLeftOut) {
+                triangle[triangleIndex++] = square[i];
+            }
+        }
         if (triangle_contains_point(triangle, point)) {
             return true;
         }

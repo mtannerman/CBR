@@ -10,7 +10,7 @@ void throw_exception(const std::string &message,
                      const std::string &file,
                      const int line)
 {
-        const std::string fullMessage = STR("ASSERTION" << "\n" <<
+        const std::string fullMessage = STR("\n\tASSERTION" << "\n" <<
             '\t' << "File: " << file << "\n" <<
             '\t' << "Line: " << line << "\n" <<
             '\t' << "Function: " << function << "\n" <<
