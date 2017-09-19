@@ -1,2 +1,2 @@
-xml based program contol: switch between training / imgproc / full modes
-                          tags to specify variables
+give size option to viz2d (respecting default aspect ratio)
+transform each widgets separately

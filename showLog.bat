@@ -1,0 +1,1 @@
+start TortoiseGitProc /command:log /path:.
