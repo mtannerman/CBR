@@ -29,6 +29,8 @@ public:
     Visualizer2D(const std::string& name);
     void SetAxisMultiplicationFactor(const double mf);
     void SetImageBackgroundColor(const cv::Scalar& bgColor);
+    void SetDiagonalLength(const int diagonalLength);
+    void SetMirroring(const bool applyMirroring);
 
     void AddCircle(const cv::Point& center,
                    const int radius,
@@ -103,8 +105,10 @@ public:
         bool bottomLeftOrigin;
     };
 private:
+    bool mApplyMirroring = true;
     cv::Scalar mImageBackgroudColor = Color::black();
     double mAxisMultiplicationFactor = 1.3;
+    int mDiagonalLength = 1000;
     std::vector<Circle> mCircles;
     std::vector<Text> mTexts;
     const std::string mName;

@@ -45,7 +45,7 @@ bool square_contains_point(
     const std::vector<cv::Point>& square,
     const cv::Point& point)
 {
-    for (const int pointLeftOut : {0, 2}) {
+    for (const int pointLeftOut : {0, 1, 2, 3}) {
         std::array<cv::Point, 3> triangle;
         int triangleIndex = 0;
         for (int i = 0; i < 4; ++i) {

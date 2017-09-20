@@ -20,31 +20,6 @@ void TEST_square_filtering_overlap(
     const std::vector<std::vector<cv::Point>>& squares,
     const std::vector<std::vector<cv::Point>>& adjustedSquares) 
 {
-    viz::Visualizer2D vizWindow(STR("dbg" << __FUNCTION__));
-    cv::Point maxAxis;
-    for (const auto& square : squares) {
-        for (const auto& corner : square) {
-            maxAxis.x = std::max(corner.x, maxAxis.x);
-            maxAxis.y = std::max(corner.y, maxAxis.y);
-        }
-    }
-    maxAxis *= 1.2;
-    const auto adjustedSquare = adjustedSquares.front();
-    auto color = cv::Scalar(0, 255, 255);
-    for (const auto& square : squares) {
-        const auto middle = fsum(square) / 4;
-        if (square_contains_point(adjustedSquare, middle)) {
-            color = cv::Scalar(0, 0, 255);
-        }
-        vizWindow.AddCircle(middle, 5, color);
-    }
-
-    for (const auto& corner : adjustedSquare) {
-        vizWindow.AddCircle(corner, 5, cv::Scalar(255, 255, 0));
-    }
-    vizWindow.Spin();
-    THROW("after spin");
-
     for (const auto square : squares) {
         const cv::Point middle = fsum(square) / 4;
         const auto nOverlappingAdjustedSquares = 

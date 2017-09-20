@@ -16,8 +16,8 @@ int main()
 {
 	CBR_INIT_CONFIG("/home/timarmate/Projects/CBR/config/config.json");
 
-	cbr::test::run_triangle_contains_point_unittest();
-	THROW("after unittest");
+	// cbr::test::run_triangle_contains_point_unittest();
+	// THROW("after unittest");
 
 	const std::string fileName = "/home/timarmate/Projects/CBR/input/3d/octagon/0.jpg";
 	auto image = cv::imread(fileName, CV_LOAD_IMAGE_COLOR);
