@@ -1,5 +1,6 @@
 
 build/
 input/
+dependencies/
 
 \.vscode/

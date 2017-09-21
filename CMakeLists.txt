@@ -13,7 +13,7 @@ set(PROJECTS
 	recog)
 
 
-set(OpenCV_DIR "/home/timarmate/opencv/opencv")
+set(OpenCV_DIR dependencies/opencv)
 find_package(OpenCV REQUIRED)
 
 
