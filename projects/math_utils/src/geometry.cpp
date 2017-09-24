@@ -1,6 +1,7 @@
 #include "math_utils/geometry.h"
 #include "common/exceptions.h"
 #include "common/logging.h"
+#include "math_utils/line.h"
 
 namespace cbr {
 
@@ -59,6 +60,28 @@ bool square_contains_point(
     }
     
     return false;
+}
+
+
+double compute_square_point_distance(const std::vector<cv::Point>& square, const cv::Point& point)
+{
+    if (square_contains_point(square, point)) {
+        return 0.0;
+    }
+
+    double ret = std::numeric_limits<double>::max();
+    for (int iCorner = 0; iCorner < 4; ++iCorner) {
+        const int iNextCorner = (iCorner == 3 ? 0 : (iCorner + 1));
+        const auto edge = Line2d<int>::FromTwoPointsOnLine(square[iCorner], square[iNextCorner]);
+        auto tMin = edge.ClosestTimeArg(point);
+        tMin = std::min(1.0, tMin);
+        tMin = std::max(0.0, tMin);
+        const auto closestEdgePoint = edge.At(tMin);
+        const auto distance = cv::norm(closestEdgePoint - cv::Point2d(point));
+        ret = std::min(ret, distance);
+    }
+
+    return ret;
 }
 
 }

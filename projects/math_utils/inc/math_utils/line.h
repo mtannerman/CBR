@@ -25,6 +25,11 @@ struct Line2d
         return ret;
     }
 
+    cv::Point2d At(const double t) const
+    {
+        return cv::Point2d(P) + t * cv::Point2d(v);
+    }
+
     double ClosestTimeArg(const PointT& otherPoint) const
     {
         const double numerator = (otherPoint - P).ddot(v);
