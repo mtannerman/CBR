@@ -1,5 +1,6 @@
 #include "imgproc/order_squares.h"
 #include "math_utils/functional.h"
+#include "math_utils/geometry.h"
 
 namespace cbr
 {
@@ -7,6 +8,11 @@ namespace cbr
 void order_square(std::vector<cv::Point>& square)
 {
     const auto middle = cv::Point2d(fsum(square)) / 4.0;
+    const auto referencePoint = square[0];
+
+    std::sort(square.begin() + 1, square.end(), 
+    [=](const cv::Point& c1, const cv::Point& c2) { 
+        return compute_rotation_angle(referencePoint, c1) < compute_rotation_angle(referencePoint, c2); });
     
 }
 

@@ -2,6 +2,7 @@
 #include "common/exceptions.h"
 #include "common/logging.h"
 #include "math_utils/line.h"
+#include <cmath>
 
 namespace cbr {
 
@@ -82,6 +83,18 @@ double compute_square_point_distance(const std::vector<cv::Point>& square, const
     }
 
     return ret;
+}
+
+double compute_rotation_angle(const cv::Point& start, const cv::Point& dest)
+{
+    ASSERT(start != cv::Point() && dest != cv::Point(), "");
+    const auto s = cv::Point2d(start) / cv::norm(start);
+    const auto d = cv::Point2d(dest) / cv::norm(dest);
+
+    const double sine = -s.y * d.x + s.x * d.y;
+    const double cosine = s.x * d.x + s.y * d.y;
+
+    return std::atan2(sine, cosine);
 }
 
 }

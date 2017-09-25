@@ -47,6 +47,14 @@ public:
                  const int thickness = 1,
                  const int lineType = 8, 
                  const bool bottomLeftOrigin = false);
+
+    void AddLine(const cv::Point& pt1,
+        const cv::Point& pt2,
+        const cv::Scalar color = cv::Scalar(255, 0, 0),
+        const int thickness = 1,
+        const int lineType = 8,
+        const int shift = 0,
+        const double tipLength = 0.1);
                  
     void Spin();
     void ClearWidgets();
@@ -104,6 +112,27 @@ public:
         int lineType;
         bool bottomLeftOrigin;
     };
+
+    struct Line
+    {
+        Line() = default;
+        Line(const cv::Point& pt1,
+            const cv::Point& pt2,
+            const cv::Scalar color = cv::Scalar(255, 0, 0),
+            const int thickness = 1,
+            const int lineType = 8,
+            const int shift = 0,
+            const double tipLength = 0.1)
+        : pt1(pt1),
+          pt2(pt2),
+          color(color),
+          thickness(thickness),
+          lineType(lineType),
+          shift(shift),
+          tipLength(tipLength)
+        {}
+
+    };
 private:
     bool mApplyMirroring = true;
     cv::Scalar mImageBackgroudColor = Color::black();
@@ -111,6 +140,7 @@ private:
     int mDiagonalLength = 1000;
     std::vector<Circle> mCircles;
     std::vector<Text> mTexts;
+    std::vector<Line> mLines;
     const std::string mName;
 };
 

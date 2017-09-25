@@ -11,7 +11,8 @@ namespace viz
 {
     std::pair<cv::Point, cv::Point> compute_image_span(
         const std::vector<Visualizer2D::Circle>& circles,
-        const std::vector<Visualizer2D::Text>& texts)
+        const std::vector<Visualizer2D::Text>& texts,
+        const std::vector<Visualizer2D::Line>& lines)
     {
         ASSERT(!circles.empty() || !texts.empty(), "No widgets given.");
         const auto maxInt = std::numeric_limits<int>::max();
@@ -32,12 +33,24 @@ namespace viz
             minAxis.y = std::min(minAxis.y, text.center.y);
         }
 
+        for (const auto& line : lines) {
+            maxAxis.x = std::max(maxAxis.x, line.pt1.x);
+            maxAxis.y = std::max(maxAxis.y, line.pt1.y);
+            minAxis.x = std::min(minAxis.x, line.pt1.x);
+            minAxis.y = std::min(minAxis.y, line.pt1.y);
+            maxAxis.x = std::max(maxAxis.x, line.pt2.x);
+            maxAxis.y = std::max(maxAxis.y, line.pt2.y);
+            minAxis.x = std::min(minAxis.x, line.pt2.x);
+            minAxis.y = std::min(minAxis.y, line.pt2.y);
+        }
+
         return {minAxis, maxAxis};
     }
 
     void translate_widgets_to_origin(
         std::vector<Visualizer2D::Circle>& circles,
         std::vector<Visualizer2D::Text>& texts,
+        const std::vector<Visualizer2D::Line>& lines,
         const cv::Point& minAxis)
     {
         for (auto& circle : circles) {
@@ -47,11 +60,17 @@ namespace viz
         for (auto& text : texts) {
             text.center -= minAxis;
         }
+
+        for (auto& line : lines) {
+            line.pt1 -= minAxis;
+            line.pt2 -= minAxis;
+        }
     }
 
     void mirror_widgets(
         std::vector<Visualizer2D::Circle>& circles,
         std::vector<Visualizer2D::Text>& texts,
+        std::vector<Visualizer2D::Line>& lines,
         const cv::Point& minAxis,
         const cv::Point& maxAxis)
     {
@@ -63,6 +82,11 @@ namespace viz
 
         for (auto& text : texts) {
             text.center.y = yAxisDiff - text.center.y;
+        }
+
+        for (auto& line : lines) {
+            line.pt1.y = yAxisDiff - line.pt1.y;
+            line.pt2.y = yAxisDiff - line.pt2.y;
         }
     }
 
@@ -89,6 +113,11 @@ namespace viz
         for (auto& text : texts) {
             text.center = cv::Point(cv::Point2d(text.center) * dilationFactor);
             text.fontScale *= dilationFactor;
+        }
+
+        for (auto& line : lines) {
+            // text.center = cv::Point(cv::Point2d(text.center) * dilationFactor);
+            // text.fontScale *= dilationFactor;
         }
     }
 
@@ -147,6 +176,19 @@ namespace viz
         mTexts.push_back(Text(text, center, fontFace, 
             fontScale, color, thickness, lineType, 
             bottomLeftOrigin));
+    }
+
+
+    void AddLine(const cv::Point& pt1,
+        const cv::Point& pt2,
+        const cv::Scalar color,
+        const int thickness,
+        const int lineType,
+        const int shift,
+        const double tipLength)
+    {
+        mLines.push_back(Line(pt1, pt2, color, thickness,
+            lineType, shift, tipLength));
     }
 
     void Visualizer2D::Spin()
