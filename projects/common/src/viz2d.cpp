@@ -116,8 +116,8 @@ namespace viz
         }
 
         for (auto& line : lines) {
-            // text.center = cv::Point(cv::Point2d(text.center) * dilationFactor);
-            // text.fontScale *= dilationFactor;
+            line.pt1 = cv::Point(cv::Point2d(line.pt1) * dilationFactor);
+            line.pt2 = cv::Point(cv::Point2d(line.pt2) * dilationFactor);
         }
     }
 
