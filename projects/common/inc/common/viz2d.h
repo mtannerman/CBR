@@ -2,6 +2,7 @@
 
 #include "opencv2/core.hpp"
 #include <string>
+#include "common/pimpl.h"
 
 namespace cbr
 {
@@ -26,6 +27,7 @@ private:
 class Visualizer2D
 {
 public:
+    ~Visualizer2D();
     Visualizer2D(const std::string& name);
     void SetAxisMultiplicationFactor(const double mf);
     void SetImageBackgroundColor(const cv::Scalar& bgColor);
@@ -53,95 +55,21 @@ public:
         const cv::Scalar color = cv::Scalar(255, 0, 0),
         const int thickness = 1,
         const int lineType = 8,
+        const int shift = 0);
+
+    void AddArrow(const cv::Point& pt1,
+        const cv::Point& pt2,
+        const cv::Scalar color = cv::Scalar(255, 0, 0),
+        const int thickness = 1,
+        const int lineType = 8,
         const int shift = 0,
         const double tipLength = 0.1);
                  
     void Spin();
     void ClearWidgets();
-public:
-    struct Circle
-    {
-        Circle() = default;
-        Circle(const cv::Point& center,
-            const int radius,
-            const cv::Scalar& color,
-            const int thickness,
-            const int lineType,
-            const int shift) 
-        : center(center)
-        , radius(radius)
-        , color(color)
-        , thickness(thickness)
-        , lineType(lineType)
-        , shift(shift) {}
-
-        cv::Point center;
-        int radius;
-        cv::Scalar color;
-        int thickness;
-        int lineType;
-        int shift;
-    };
-
-    struct Text
-    {
-        Text() = default;
-        Text(const std::string& text,
-            const cv::Point& center,
-            const int fontFace,
-            const double fontScale,
-            const cv::Scalar& color,
-            const int thickness,
-            const int lineType,
-            const bool bottomLeftOrigin)
-        : text(text)
-        , center(center)
-        , fontFace(fontFace)
-        , fontScale(fontScale)
-        , color(color)
-        , thickness(thickness)
-        , lineType(lineType)
-        , bottomLeftOrigin(bottomLeftOrigin) {}
-
-        std::string text;
-        cv::Point center;
-        int fontFace;
-        double fontScale;
-        cv::Scalar color;
-        int thickness;
-        int lineType;
-        bool bottomLeftOrigin;
-    };
-
-    struct Line
-    {
-        Line() = default;
-        Line(const cv::Point& pt1,
-            const cv::Point& pt2,
-            const cv::Scalar color = cv::Scalar(255, 0, 0),
-            const int thickness = 1,
-            const int lineType = 8,
-            const int shift = 0,
-            const double tipLength = 0.1)
-        : pt1(pt1),
-          pt2(pt2),
-          color(color),
-          thickness(thickness),
-          lineType(lineType),
-          shift(shift),
-          tipLength(tipLength)
-        {}
-
-    };
 private:
-    bool mApplyMirroring = true;
-    cv::Scalar mImageBackgroudColor = Color::black();
-    double mAxisMultiplicationFactor = 1.3;
-    int mDiagonalLength = 1000;
-    std::vector<Circle> mCircles;
-    std::vector<Text> mTexts;
-    std::vector<Line> mLines;
-    const std::string mName;
+    struct Impl;
+    impl_ptr<Impl> mImpl;
 };
 
 }
