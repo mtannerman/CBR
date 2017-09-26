@@ -10,15 +10,15 @@ namespace cbr
 namespace common_detail
 {
 
-std::string currentDateTime() {
-	time_t     now = time(0);
-	struct tm  tstruct;
-	char       buf[80];
-	tstruct = *localtime(&now);
-	strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
-
-	return buf;
-}
+//std::string currentDateTime() {
+//	time_t     now = time(0);
+//	struct tm  tstruct;
+//	char       buf[80];
+//	tstruct = *localtime(&now);
+//	strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+//
+//	return buf;
+//}
 
 struct Logger
 {
@@ -28,7 +28,7 @@ struct Logger
 		//fullLog << "[" << function << "]  " << message << std::endl;
 	}
 
-	std::string currentDateTime() {
+	/*std::string currentDateTime() {
 		time_t     now = time(0);
 		struct tm  tstruct;
 		char       buf[80];
@@ -39,7 +39,7 @@ struct Logger
 		}
 
 		return buf;
-	}
+	}*/
 
 	//std::string LogFileName()
 	//{

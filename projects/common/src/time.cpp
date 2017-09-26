@@ -31,7 +31,7 @@ namespace cbr
     }
 }
 
-std::string ZeroExtendedString(const int val, const int nDigits = 2)
+std::string ZeroExtendedString(const int64_t val, const int nDigits = 2)
 {
     const std::string str = std::to_string(val);
     const int missing = nDigits - int(str.size());
