@@ -401,6 +401,7 @@ namespace viz
         mImpl->mCircles.clear();
         mImpl->mTexts.clear();
         mImpl->mLines.clear();
+        mImpl->mArrows.clear();
     }
 
 }
