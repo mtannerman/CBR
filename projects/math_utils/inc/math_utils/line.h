@@ -25,6 +25,14 @@ struct Line2d
         return ret;
     }
 
+    static Line2d FromAngle(const T angle)
+    {
+        Line2d ret;
+        ret.P = PointT();
+        ret.v = PointT(std::cos(angle), std::sin(angle));
+        return ret;
+    }
+
     cv::Point2d At(const double t) const
     {
         return cv::Point2d(P) + t * cv::Point2d(v);
