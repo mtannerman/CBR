@@ -34,18 +34,18 @@ namespace cbr
     cv::Mat Homography::Apply() const
     {
         cv::Mat ret(setting.numberOfXPoints, setting.numberOfYPoints, 0);
-        const auto fpSquares = std::array<cv::Point2f, 4>{ cv::Point2f(sourceSquare[0]), cv::Point2f(sourceSquare[1]), cv::Point2f(sourceSquare[2]), cv::Point2f(sourceSquare[3]) };
-        for (int iy = 0; iy < setting.numberOfYPoints; ++iy) {
-            const float lambdaY = float(iy) / float(setting.numberOfYPoints);
-            const auto leftPoint = convex_combination(fpSquares[0], fpSquares[3], lambdaY);
-            const auto rightPoint = convex_combination(fpSquares[1], fpSquares[2], lambdaY);
-            for (int ix = 0; ix < setting.numberOfXPoints; ++ix) {
-                const float lambdaX = float(ix) / float(setting.numberOfYPoints);
-                const auto fpCenterPoint = convex_combination(leftPoint, rightPoint, lambdaX);
-                const auto centerPoint = cv::Point(int(fpCenterPoint.x), int(fpCenterPoint.y));
-                ret.at<uchar>(ix, iy) = image.at<uchar>();
-            }
-        }
+        // const auto fpSquares = std::array<cv::Point2f, 4>{ cv::Point2f(sourceSquare[0]), cv::Point2f(sourceSquare[1]), cv::Point2f(sourceSquare[2]), cv::Point2f(sourceSquare[3]) };
+        // for (int iy = 0; iy < setting.numberOfYPoints; ++iy) {
+        //     const float lambdaY = float(iy) / float(setting.numberOfYPoints);
+        //     const auto leftPoint = convex_combination(fpSquares[0], fpSquares[3], lambdaY);
+        //     const auto rightPoint = convex_combination(fpSquares[1], fpSquares[2], lambdaY);
+        //     for (int ix = 0; ix < setting.numberOfXPoints; ++ix) {
+        //         const float lambdaX = float(ix) / float(setting.numberOfYPoints);
+        //         const auto fpCenterPoint = convex_combination(leftPoint, rightPoint, lambdaX);
+        //         const auto centerPoint = cv::Point(int(fpCenterPoint.x), int(fpCenterPoint.y));
+        //         ret.at<uchar>(ix, iy) = image.at<uchar>();
+        //     }
+        // }
 
         return ret;
     }

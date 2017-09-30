@@ -78,7 +78,6 @@ std::vector<cv::Point2f> find_corner_cluster_centers(const std::vector<std::vect
     const double squareEdgeLengthAverage = compute_square_edge_length_average(squares);
     const double clusteringDistance = squareEdgeLengthAverage / 2.0;
 
-    int clusterIndex = 0;
     auto clusterLabels = std::vector<size_t>(corners.size(), std::numeric_limits<size_t>::max());
     clusterLabels[0] = 0;
     std::vector<CornerCluster> cornerClusters;

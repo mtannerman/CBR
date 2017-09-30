@@ -7,7 +7,6 @@ namespace cbr
 
 void order_square(std::vector<cv::Point>& square)
 {
-    const auto middle = cv::Point2d(fsum(square)) / 4.0;
     const auto referencePoint = square[0];
 
     std::sort(square.begin() + 1, square.end(), 

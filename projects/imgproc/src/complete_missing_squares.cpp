@@ -1,7 +1,6 @@
 #include "imgproc/complete_missing_squares.h"
 #include <array>
 #include "common/exceptions.h"
-#include "math_utils/line.h"
 
 namespace cbr
 {
@@ -60,19 +59,36 @@ double initialize_phi(const std::vector<cv::Point2d>& edgeDirections)
     return 0.0;
 }
 
-double compute_angle_pair_error_square(
-    const std::vector<cv::Point2d>& edgeDirections,
+double compute_angle_pair_error(
+    const std::vector<double>& edgeDirections,
     const double phi, const double omega)
 {
-    return 0.0;
+    double errorSum = 0;
+    for (const double edgeAngle : edgeDirections) {
+        double angleDiffMin = std::abs(phi - edgeAngle);
+        angleDiffMin = std::min(angleDiffMin, std::abs(phi  + edgeAngle));
+        angleDiffMin = std::min(angleDiffMin, std::abs(omega - edgeAngle));
+        angleDiffMin = std::min(angleDiffMin, std::abs(omega + edgeAngle));
+
+        errorSum += errorSum;
+    }
+    return errorSum;
 }
 
 std::array<cv::Point2d, 2> find_two_projective_line_means(
-    const std::vector<cv::Point2d>& edgeDirections)
+    const std::vector<double>& edgeDirections)
 {
-    double phi = initialize_phi(edgeDirections);
-    constexpr double phiOver2 = 1.5707963;
-    double omega = phiOver2;
+    // double phi = initialize_phi(edgeDirections);
+    // constexpr double phiOver2 = 1.5707963;
+    // double omega = phiOver2;
+
+    // constexpr int nIterations = 10;
+    // constexpr double phiDelta = 0.01;
+    // constexpr double omegaDelta = 0.01;
+
+    // for (int i = 0; i < nIterations; ++i) {
+        
+    // }
 
     // std::array<std::array<>>
 
@@ -80,15 +96,19 @@ std::array<cv::Point2d, 2> find_two_projective_line_means(
     return std::array<cv::Point2d, 2>();
 }
 
-std::array<cv::Point2d, 2> square_edgedirections(const std::vector<cv::Point>& square)
+double to_edgedirection(cv::Point2d p)
 {
-    std::array<cv::Point2d, 2> ret;
-    ret[0] += cv::Point2d((square[1] - square[0]) + (square[2] - square[3]));
-    ret[1] += cv::Point2d((square[2] - square[1]) + (square[3] - square[0]));
+    const double pNorm = cv::norm(p);
+    ASSERT(pNorm != 0.0, "");
+    p /= pNorm;
+    return std::atan2(p.y, p.x);
+}
 
-    for (auto& edgeDirection : ret) {
-        edgeDirection /= cv::norm(edgeDirection);
-    }
+std::array<double, 2> square_edgedirections(const std::vector<cv::Point>& square)
+{
+    std::array<double, 2> ret;
+    ret[0] = to_edgedirection(cv::Point2d((square[1] - square[0]) + (square[2] - square[3])));
+    ret[1] = to_edgedirection(cv::Point2d((square[2] - square[1]) + (square[3] - square[0])));
 
     return ret;
 }
@@ -96,7 +116,7 @@ std::array<cv::Point2d, 2> square_edgedirections(const std::vector<cv::Point>& s
 std::array<cv::Point2d, 2> find_dominant_edgedirections(
     const std::vector<std::vector<cv::Point>>& squares)
 {
-    std::vector<cv::Point2d> edgeDirections;
+    std::vector<double> edgeDirections;
     edgeDirections.reserve(2 * squares.size());
     for (const auto& square : squares) {
         const auto edgeDirectionsOfSquare = square_edgedirections(square);
@@ -104,7 +124,7 @@ std::array<cv::Point2d, 2> find_dominant_edgedirections(
         edgeDirections.push_back(edgeDirectionsOfSquare[1]);
     }
 
-
+    return std::array<cv::Point2d, 2>();
 }
 
 std::vector<std::vector<cv::Point>> complete_missing_squares(

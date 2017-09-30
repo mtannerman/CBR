@@ -47,7 +47,7 @@ namespace cbr
 		constexpr int boardLength = imageSize / 2;
 		constexpr int halfBoardLength = boardLength / 2;
 		constexpr int squareLength = boardLength / 8;
-		constexpr float pi = 3.14159265359f;
+		// constexpr float pi = 3.14159265359f;
 
 		const float alpha = 0.0f;
 		const float beta = 0.0f;

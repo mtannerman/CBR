@@ -17,7 +17,7 @@ void run_square_ordering_test(const std::vector<std::vector<cv::Point>>& squares
         viz::Color::blue(),
         viz::Color::green()};
     
-    int iColor = 0;
+    size_t iColor = 0;
 
     for (const auto& square : squares) {
         for (int i = 0; i < 4; ++i) {
