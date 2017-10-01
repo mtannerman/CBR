@@ -1,10 +1,9 @@
 #pragma once
 
 #include <memory>
-#include <experimental/propagate_const>
 
 namespace cbr
 {
     template <typename T>
-    using impl_ptr = std::experimental::propagate_const<std::unique_ptr<T>>;
+    using impl_ptr = std::unique_ptr<T>;
 }

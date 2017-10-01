@@ -2,32 +2,36 @@
 
 #include <functional>
 #include <vector>
+#include "common/pimpl.h"
 
 namespace cbr
 {
 
 class SimplexOptimizer
 {
-    typedef std::vector<double> Parameters;
 public:
+    typedef std::vector<double> Parameters;
+
     struct Config
     {
-        Config(const size_t simplexSize) : simplexSize(simplexSize) {}
         size_t maxIterations = 10;
         double reflection = 1.0;
         double expansion = 2.0;
         double contraction = 0.5;
-        bool initialize = false;
-        size_t simplexSize;
     };
 
     const Config config;
 
-    SimplexOptimizer(const Parameters& params)
-        : config(params.size()) {}
+    SimplexOptimizer(const Parameters& params, const size_t nSimplexNodes);
 
-    Parameters Optimize();
+    Parameters Optimize(std::function<double(Parameters)> errorFunction);
+    std::vector<Parameters>& GetSimplex();
+    const std::vector<Parameters>& GetSimplex() const;
+    bool isSimplexInitialized = false;
+
 private:
+    struct Impl;
+    impl_ptr<Impl> mImpl;
 };
 
 }
