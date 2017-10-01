@@ -10,7 +10,7 @@ namespace cbr
 class SimplexOptimizer
 {
 public:
-    typedef std::vector<double> Parameters;
+    typedef std::vector<double> ParameterVector;
 
     struct Config
     {
@@ -22,11 +22,11 @@ public:
 
     const Config config;
 
-    SimplexOptimizer(const Parameters& params, const size_t nSimplexNodes);
+    SimplexOptimizer(const ParameterVector& params, const size_t nSimplexNodes);
 
-    Parameters Optimize(std::function<double(Parameters)> errorFunction);
-    std::vector<Parameters>& GetSimplex();
-    const std::vector<Parameters>& GetSimplex() const;
+    ParameterVector Optimize(std::function<double(ParameterVector)> errorFunction);
+    std::vector<ParameterVector>& GetSimplex();
+    const std::vector<ParameterVector>& GetSimplex() const;
     bool isSimplexInitialized = false;
 
 private:
