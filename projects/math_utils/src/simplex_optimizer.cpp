@@ -1,5 +1,6 @@
 #include "math_utils/simplex_optimizer.h"
 #include "common/exceptions.h"
+#include <algorithm>
 
 namespace cbr
 {
@@ -9,6 +10,10 @@ struct SimplexOptimizer::Impl
     Impl(const size_t nParams, const size_t nSimplexNodes) : nParams(nParams), nSimplexNodes(nSimplexNodes) {}
     struct IndexErrorPair
     {
+        bool operator<(const IndexErrorPair& other) 
+        {
+            return error < other.error;
+        }
         size_t index;
         double error;
     };
@@ -22,6 +27,7 @@ struct SimplexOptimizer::Impl
 
     std::vector<IndexErrorPair> indexErrorPairs;
     std::vector<Parameters> simplex;
+    std::vector<Parameters> simplexCopy;
 }; 
 
 void SimplexOptimizer::Impl::ComputeCentroid()
@@ -37,7 +43,7 @@ void SimplexOptimizer::Impl::ComputeCentroid()
 
 void SimplexOptimizer::Impl::SortSimplex()
 {
-
+    std::sort(indexErrorPairs.begin(), indexErrorPairs.end());
 }
 
 std::vector<SimplexOptimizer::Parameters>& SimplexOptimizer::GetSimplex()
