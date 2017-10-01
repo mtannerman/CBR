@@ -50,8 +50,9 @@ struct SimplexOptimizer::Impl
 
     void ComputeReflectionPoint(const double reflectionMagnitude);
     void ComputeExpansionPoint(const double expansionMagnitude);
-    void ComputeOutsideContractionPoint();
-    void ComputeInsideContractionPoint();
+    void ComputeOutsideContractionPoint(const double contractionMagnitude);
+    void ComputeInsideContractionPoint(const double contractionMagnitude);
+    void Shrink(const double shrinkageMagnitude);
 }; 
 
 void SimplexOptimizer::Impl::ComputeReflectionPoint(const double reflectionMagnitude)
@@ -68,14 +69,27 @@ void SimplexOptimizer::Impl::ComputeExpansionPoint(const double expansionMagnitu
     }
 }
 
-void SimplexOptimizer::Impl::ComputeOutsideContractionPoint()
+void SimplexOptimizer::Impl::ComputeOutsideContractionPoint(const double contractionMagnitude)
 {
-
+    for (size_t iParam = 0; iParam < nParams; ++iParam) {
+        outsideContraction.value[iParam] = centroid[iParam] + contractionMagnitude * (reflection.value[iParam] - centroid[iParam]);
+    }
 }
 
-void SimplexOptimizer::Impl::ComputeInsideContractionPoint()
+void SimplexOptimizer::Impl::ComputeInsideContractionPoint(const double contractionMagnitude)
 {
+    for (size_t iParam = 0; iParam < nParams; ++iParam) {
+        insideContraction.value[iParam] = centroid[iParam] - contractionMagnitude * (reflection.value[iParam] - centroid[iParam]);
+    }
+}
 
+void SimplexOptimizer::Impl::Shrink(const double shrinkageMagnitude)
+{
+    for (size_t iSimplex = 1; iSimplex < nSimplexNodes; ++iSimplex) {
+        for (size_t iParam = 0; iParam < nParams; ++iParam) {
+            simplex[iSimplex][iParam] = simplex[0][iParam] + shrinkageMagnitude * (simplex[iSimplex][iParam] - simplex[0][iParam]);
+        }
+    }
 }
 
 void SimplexOptimizer::Impl::ComputeCentroid()
@@ -96,13 +110,64 @@ void SimplexOptimizer::Impl::Optimize(std::function<double(ParameterVector)> err
         indexErrorPairs[iSimplex].index = iSimplex;
         indexErrorPairs[iSimplex].error = errorFunction(simplex[iSimplex]);
     }
-    std::sort(indexErrorPairs.begin(), indexErrorPairs.end());
-    for (size_t iSimplex = 0; iSimplex < nSimplexNodes; ++iSimplex) {
-        simplex[iSimplex] = simplexCopy[indexErrorPairs[iSimplex].index];
-    }
+    
 
     for (size_t iIter = 0; iIter < config.maxIterations; ++iIter) {
-        
+        std::sort(indexErrorPairs.begin(), indexErrorPairs.end());
+        for (size_t iSimplex = 0; iSimplex < nSimplexNodes; ++iSimplex) {
+            simplex[iSimplex] = simplexCopy[indexErrorPairs[iSimplex].index];
+        }
+        ComputeCentroid();
+        ComputeReflectionPoint(config.reflection);
+        reflection.error = errorFunction(reflection.value);
+
+        bool needToShrink = false;
+
+        if (indexErrorPairs[0].error <= reflection.error && reflection.error < (indexErrorPairs.rbegin() + 1)->error) {
+            simplex.back() = reflection.value;
+            indexErrorPairs.back().error = reflection.error;
+        }       
+        else if (reflection.error < indexErrorPairs[0].error) {
+            ComputeExpansionPoint(config.expansion);
+            expansion.error = errorFunction(expansion.value);
+            if (expansion.error < reflection.error) {
+                simplex.back() = expansion.value;
+                indexErrorPairs.back().error = expansion.error;
+            }
+            else {
+                simplex.back() = reflection.value;
+                indexErrorPairs.back().error = reflection.error;
+            }
+        }
+        else if ((indexErrorPairs.rbegin() + 1)->error <= reflection.error && reflection.error < indexErrorPairs.back().error) {
+            ComputeOutsideContractionPoint(config.contraction);
+            outsideContraction.error = errorFunction(outsideContraction.value);
+            if (outsideContraction.error <= reflection.error) {
+                simplex.back() = outsideContraction.value;
+                indexErrorPairs.back().error = outsideContraction.error;
+            }
+            else {
+                needToShrink = true;
+            }
+        }
+        else {
+            ComputeInsideContractionPoint(config.contraction);
+            insideContraction.error = errorFunction(insideContraction.value);
+            if (insideContraction.error < indexErrorPairs.back().error) {
+                simplex.back() = insideContraction.value;
+                indexErrorPairs.back().error = insideContraction.error;
+            }
+            else {
+                needToShrink = true;
+            }
+        }
+
+        if (needToShrink) {
+            Shrink(config.shrinkage);
+            for (size_t iSimplex = 1; iSimplex < nSimplexNodes; ++iSimplex) {
+                indexErrorPairs[iSimplex].error = errorFunction(simplex[iSimplex]);
+            }
+        }
 
 
     }

@@ -18,6 +18,7 @@ public:
         double reflection = 1.0;
         double expansion = 2.0;
         double contraction = 0.5;
+        double shrinkage = 0.9;
     };
 
     const Config config;
