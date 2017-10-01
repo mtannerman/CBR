@@ -19,7 +19,7 @@ struct SimplexOptimizer::Impl
     };
 
     void ComputeCentroid();
-    void SortSimplex();
+    void Optimize(std::function<double(Parameters)> errorFunction, SimplexOptimizer::Config config);
 
     size_t nParams;
     size_t nSimplexNodes;
@@ -28,7 +28,37 @@ struct SimplexOptimizer::Impl
     std::vector<IndexErrorPair> indexErrorPairs;
     std::vector<Parameters> simplex;
     std::vector<Parameters> simplexCopy;
+
+    Parameters reflectionPoint;
+    Parameters expansionPoint;
+    Parameters outsideContractionPoint;
+    Parameters insideContractionPoint;
+
+    void ComputeReflectionPoint();
+    void ComputeExpansionPoint();
+    void ComputeOutsideContractionPoint();
+    void ComputeInsideContractionPoint();
 }; 
+
+void SimplexOptimizer::Impl::ComputeReflectionPoint();
+{
+
+}
+
+void SimplexOptimizer::Impl::ComputeExpansionPoint()
+{
+
+}
+
+void SimplexOptimizer::Impl::ComputeOutsideContractionPoint()
+{
+
+}
+
+void SimplexOptimizer::Impl::ComputeInsideContractionPoint()
+{
+
+}
 
 void SimplexOptimizer::Impl::ComputeCentroid()
 {
@@ -41,9 +71,24 @@ void SimplexOptimizer::Impl::ComputeCentroid()
     }
 }
 
-void SimplexOptimizer::Impl::SortSimplex()
+void SimplexOptimizer::Impl::Optimize(std::function<double(Parameters)> errorFunction, SimplexOptimizer::Config config)
 {
+    simplexCopy = simplex;
+    for (size_t iSimplex = 0; iSimplex < nSimplexNodes; ++iSimplex) {
+        indexErrorPairs[iSimplex].index = iSimplex;
+        indexErrorPairs[iSimplex].error = errorFunction(simplex[iSimplex]);
+    }
     std::sort(indexErrorPairs.begin(), indexErrorPairs.end());
+    for (size_t iSimplex = 0; iSimplex < nSimplexNodes; ++iSimplex) {
+        simplex[iSimplex] = simplexCopy[indexErrorPairs[iSimplex].index];
+    }
+
+    for (size_t iIter = 0; iIter < config.maxIterations; ++iIter) {
+        
+
+
+    }
+
 }
 
 std::vector<SimplexOptimizer::Parameters>& SimplexOptimizer::GetSimplex()
