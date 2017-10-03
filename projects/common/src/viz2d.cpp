@@ -129,6 +129,7 @@ namespace viz
             const double dilationFactor) const;
 
         void Spin();
+        cv::Mat CreateImage();
 
 
         bool mApplyMirroring = true;
@@ -358,6 +359,22 @@ namespace viz
     void Visualizer2D::Impl::Spin()
     {
         cv::namedWindow(mName, cv::WINDOW_AUTOSIZE);
+        const auto image = CreateImage();
+
+        cv::imshow(mName, image);
+        cv::waitKey();
+    }
+
+    void Visualizer2D::ClearWidgets()
+    {
+        mImpl->mCircles.clear();
+        mImpl->mTexts.clear();
+        mImpl->mLines.clear();
+        mImpl->mArrows.clear();
+    }
+
+    cv::Mat Visualizer2D::Impl::CreateImage()
+    {
         const auto imageSpan = compute_image_span();
         translate_widgets_to_origin(imageSpan.first);
         if (mApplyMirroring) {
@@ -392,17 +409,13 @@ namespace viz
                 arrow.lineType, arrow.shift, arrow.tipLength);
         }
 
-        cv::imshow(mName, image);
-        cv::waitKey();
+        return image;
     }
 
-    void Visualizer2D::ClearWidgets()
+
+    cv::Mat Visualizer2D::CreateImage()
     {
-        mImpl->mCircles.clear();
-        mImpl->mTexts.clear();
-        mImpl->mLines.clear();
-        mImpl->mArrows.clear();
+        return mImpl->CreateImage();
     }
-
 }
 }

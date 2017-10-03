@@ -21,11 +21,15 @@ public:
         double shrinkage = 0.9;
     };
 
-    const Config config;
+    Config config;
 
-    SimplexOptimizer(const ParameterVector& params, const size_t nSimplexNodes);
+    SimplexOptimizer(const size_t nParams,
+         const size_t nSimplexNodes);
 
-    ParameterVector Optimize(std::function<double(ParameterVector)> errorFunction);
+    ~SimplexOptimizer();
+
+    ParameterVector Optimize(
+        std::function<double(ParameterVector)> errorFunction);
     std::vector<ParameterVector>& GetSimplex();
     const std::vector<ParameterVector>& GetSimplex() const;
     bool isSimplexInitialized = false;

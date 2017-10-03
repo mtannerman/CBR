@@ -65,6 +65,8 @@ public:
         const int shift = 0,
         const double tipLength = 0.1);
                  
+    cv::Mat CreateImage();
+
     void Spin();
     void ClearWidgets();
 private:

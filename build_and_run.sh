@@ -2,5 +2,5 @@
 
 clear
 cd build
-make CBRMain
+make -j4 CBRMain
 ./projects/CBRMain/CBRMain 

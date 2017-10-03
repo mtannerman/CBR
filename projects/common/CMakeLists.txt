@@ -5,6 +5,7 @@ SET(COMMON_INC
 	inc/common/archive_collection.h
 	inc/common/config.h
 	inc/common/viz2d.h
+	inc/common/cyclic_container.h
 	inc/common/exceptions.h
 	inc/common/logging.h)
 
@@ -12,6 +13,7 @@ SET(COMMON_SRC
     src/logging.cpp
     src/config.cpp
     src/viz2d.cpp
+    src/cyclic_container.cpp
     src/exceptions.cpp
     src/time.cpp)
     
