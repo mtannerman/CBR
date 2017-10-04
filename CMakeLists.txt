@@ -18,6 +18,8 @@ endif()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+MESSAGE(STATUS "Compiler id: ${CMAKE_CXX_COMPILER_ID}")
+
 # Treat warning as error
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
@@ -27,6 +29,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
 
+set(CBR_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
 set(PROJECTS
 	CBRMain
 	math_utils
@@ -35,7 +39,7 @@ set(PROJECTS
 	recog)
 
 
-set(OpenCV_DIR dependencies/opencv)
+set(OpenCV_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/opencv)
 find_package(OpenCV REQUIRED)
 MESSAGE(STATUS "OpenCV version (major.minor.patch): ${OpenCV_VERSION_MAJOR}${OpenCV_VERSION_MINOR}${OpenCV_VERSION_PATCH}")
 MESSAGE(STATUS "OpenCV include paths:")
