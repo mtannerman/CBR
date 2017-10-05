@@ -1,5 +1,7 @@
 PROJECT(common)
 
+SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 SET(COMMON_INC
 	inc/common/time.h
 	inc/common/archive_collection.h
