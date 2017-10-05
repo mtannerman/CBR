@@ -120,9 +120,9 @@ void SimplexOptimizer::Impl::Shrink(const double shrinkageMagnitude)
 
 void SimplexOptimizer::Impl::ComputeCentroid()
 {
-    for (size_t iParam = 0; iParam + 1 < nParams; ++iParam) {
+    for (size_t iParam = 0; iParam < nParams; ++iParam) {
         centroid[iParam] = 0.0;
-        for (size_t iSimplex = 0; iSimplex < nSimplexNodes; ++iSimplex) {
+        for (size_t iSimplex = 0; iSimplex + 1 < nSimplexNodes; ++iSimplex) {
             centroid[iParam] += simplex[iSimplex][iParam];
         }
         centroid[iParam] /= (nSimplexNodes - 1);
@@ -159,13 +159,15 @@ void SimplexOptimizer::Impl::Optimize(
         for (size_t iSimplex = 0; iSimplex < nSimplexNodes; ++iSimplex) {
             indexErrorPairs[iSimplex].index = iSimplex;
         }
-        LOG("====================== iter #" << iIter << " =======================");
+        // LOG("====================== iter #" << iIter << " =======================");
         std::sort(indexErrorPairs.begin(), indexErrorPairs.end());
         // LOG("indexerrorpairs after sorting");
         // for (const auto& p : indexErrorPairs) {
         //     LOG(p.index << ", " << p.error);
         // }
+        // LOG("sorting");
         for (size_t iSimplex = 0; iSimplex < nSimplexNodes; ++iSimplex) {
+            // LOG(ParamVecStr(simplex[iSimplex]) << ", " << errorFunction(simplex[iSimplex])  << "  <-----  " << ParamVecStr(simplexCopy[indexErrorPairs[iSimplex].index]) << ", " << errorFunction(simplexCopy[indexErrorPairs[iSimplex].index]));
             simplex[iSimplex] = simplexCopy[indexErrorPairs[iSimplex].index];
         }
 
@@ -178,16 +180,16 @@ void SimplexOptimizer::Impl::Optimize(
         //     LOG(ss.str() << "value: " << errorFunction(node));
         // }
 
-        LOG("lowest simplex: " << ParamVecStr(simplex[0]) << ": " << errorFunction(simplex[0]));
-        LOG("second highest simplex: " << ParamVecStr(*(simplex.rbegin() + 1)) << ": " << errorFunction(*(simplex.rbegin() + 1)));
-        LOG("highest simplex: " << ParamVecStr(simplex.back()) << ": " << errorFunction(simplex.back()));
+        // LOG("lowest simplex: " << ParamVecStr(simplex[0]) << ": " << errorFunction(simplex[0]));
+        // LOG("second highest simplex: " << ParamVecStr(*(simplex.rbegin() + 1)) << ": " << errorFunction(*(simplex.rbegin() + 1)));
+        // LOG("highest simplex: " << ParamVecStr(simplex.back()) << ": " << errorFunction(simplex.back()));
 
         ComputeCentroid();
-        // LOG("centroid: " << ParamVecStr(centroid));    
+        // LOG("centroid: " << ParamVecStr(centroid) << ", " << errorFunction(centroid));    
         ComputeReflectionPoint(config.reflection);
         reflection.error = errorFunction(reflection.value);
-        LOG("reflection point: " << ParamVecStr(reflection.value));
-        LOG(DESC(reflection.error));
+        // LOG("reflection point: " << ParamVecStr(reflection.value));
+        // LOG(DESC(reflection.error));
 
         bool needToShrink = false;
 
@@ -247,7 +249,7 @@ void SimplexOptimizer::Impl::Optimize(
                 indexErrorPairs[iSimplex].error = errorFunction(simplex[iSimplex]);
             }
         }
-        PrintSimplex(errorFunction);
+        // PrintSimplex(errorFunction);
 
     }
 
