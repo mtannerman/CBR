@@ -33,7 +33,7 @@ void visualize_consecutive_simplexes()
 
     for (size_t i = 0; i < 10; ++i) {
         optimizer.Optimize([](const std::vector<double>& params) { 
-            return std::sqrt(params[0] * params[0] + params[1] * params[1]); 
+            return std::sqrt((params[0] - 2.0) * (params[0] - 2.0) + params[1] * params[1]); 
         });
         simplexes.push_back(optimizer.GetSimplex());
     }
@@ -83,7 +83,7 @@ void run_one_optimization_session()
     optimizer.isSimplexInitialized = true;
 
     optimizer.Optimize([](const std::vector<double>& params) { 
-        return std::sqrt(params[0] * params[0] + params[1] * params[1]); 
+        return std::sqrt((params[0] - 2.0) * (params[0] - 2.0) + params[1] * params[1]); 
     });
 }
 

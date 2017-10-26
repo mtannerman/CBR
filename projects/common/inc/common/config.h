@@ -1,18 +1,16 @@
 #pragma once
 #include <string>
-
-#define CBR_INIT_CONFIG(configPath_) ::cbr::SetConfigPath(configPath_); ::cbr::Config::GetInstance();
+#include "common/logging.h"
+#include <map>
 
 namespace cbr
 {
 
-std::string configPath = "";
-void SetConfigPath(const std::string& path) { configPath = path; }
-
 class Config
 {
 public:
-    static const Config& GetInstance();
+    static Config& GetInstance();
+    void ParseFile(const std::string& path);
 
     // tests
     bool testImgProcSquareOverlap = false;
@@ -20,7 +18,7 @@ public:
     // visualization
     bool visualizeSquareFiltering = false;
 private:
-    Config();
+    Config() = default;
 };
 
 }

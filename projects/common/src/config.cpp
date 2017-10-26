@@ -14,7 +14,7 @@ bool is_line_commented(const std::string& line)
 
 std::string read_config_file(const std::string& fileName)
 {
-    std::ifstream s(configPath);
+    std::ifstream s(fileName);
     ASSERT(s.is_open(), "Cannot open config file.");
     std::string line;
     std::string ret;
@@ -23,6 +23,8 @@ std::string read_config_file(const std::string& fileName)
             ret += line + "\n";
         }
     }
+    
+    s.close();
 
     return ret;
 }
@@ -74,23 +76,22 @@ void read_visualization_options(Config& config, const rapidjson::Document& doc)
     }
 }
 
-Config::Config()
+void Config::ParseFile(const std::string& path)
 {
-    ASSERT(configPath != "", "configPath must be set.");
-    
-    const auto configFileContent = read_config_file(configPath);
+    LOG(DESC(path));
+    ASSERT(path != "", "configPath must be set.");
+    const auto configFileContent = read_config_file(path);
     rapidjson::Document doc;
     LOG("Parsing config file.");
     doc.Parse(configFileContent.c_str());
     ASSERT(doc.IsObject(), "invalid config file");
     read_tests(*this, doc);
     read_visualization_options(*this, doc);
-    
-
     LOG("Parsing finished.");
 }
 
-const Config& Config::GetInstance()
+
+Config& Config::GetInstance()
 {
     static Config config;
     return config;
