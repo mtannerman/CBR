@@ -1,102 +1,74 @@
 #include "imgproc/complete_missing_squares.h"
 #include <array>
 #include "common/exceptions.h"
+#include <cmath>
+#include "math_utils/simplex_optimizer.h"
 
 namespace cbr
 {
 
-// std::array<bool, 4> compute_number_of_neighbors(
-//     const std::vector<std::vector<cv::Point>>& squares,
-//     const size_t iSquare)
-// {
-//     std::vector<int> unsetCorners{0, 1, 2, 3};   
-//     std::array<bool, 4> ret{false, false, false, false}; 
-//     for (size_t i = 0; i < squares.size(); ++i) {
-//         if (i == iSquare) {
-//             continue;
-//         }
-//         for (const auto& corner : squares[i]) {
-//             for (auto it = unsetCorners.begin(); it != unsetCorners.end();) {
-//                 if (squares[iSquare][*it] == corner) {
-//                     ret[*it] = true;
-//                     it = unsetCorners.erase(it);
-//                 }
-//                 else {
-//                     ++it;
-//                 }
-//             }
-//         }
-//         if (unsetCorners.empty()) {
-//             return ret;
-//         }
-//     }
-
-//     return ret;
-// }
-
-// double compute_convex_hull_score(
-//     const std::vector<std::vector<cv::Point>>& squares,
-//     const std::vector<cv::Point>& hullSquare)
-// {
-//     return 0.0;
-// }
-
-// std::vector<cv::Point> find_convex_hull_square(
-//     const std::vector<std::vector<cv::Point>>& squares)
-// {
-//     return std::vector<cv::Point>();
-// }
-
-double initialize_phi(const std::vector<cv::Point2d>& edgeDirections)
+template<typename T>
+struct MinimalValue
 {
-    for (const auto& d : edgeDirections) {
-        if (std::abs(d.x) > 1e-2) {
-            return std::atan(d.y / d.x);
+    MinimalValue(const T& value_)
+    {
+        value = value_;
+    }
+    void Min(const T& value_)
+    {
+        value = std::min(value, value_);
+    }
+
+    T value;
+};
+
+struct EdgeAngleFitter
+{
+    std::array<double, 2> Fit(const std::vector<double>& edgeAngles)
+    {
+        constexpr size_t nParams = 2;
+        constexpr size_t nSimplexNodes = 3;
+        constexpr double pi = 3.141592653;
+        const std::vector<std::vector<double>> initialSimplex{
+            std::vector<double>{0.0, pi/3},
+            std::vector<double>{pi/3, 2*pi/3},
+            std::vector<double>{2*pi/3, pi}
+        };
+
+        SimplexOptimizer optimizer(nParams, nSimplexNodes);
+        optimizer.GetSimplex() = initialSimplex;
+        optimizer.isSimplexInitialized = true;
+
+        const auto optimalAnglePair = optimizer.Optimize(
+            [&edgeAngles](const std::vector<double>& anglePair) { 
+                return ComputeAnglePairError(anglePair, edgeAngles);
+            }
+        );
+
+        return std::array<double, 2>{optimalAnglePair[0], optimalAnglePair[1]};
+    }
+
+    static double ComputeAnglePairError(
+        const std::vector<double>& anglePair, 
+        const std::vector<double>& edgeAngles)
+    {
+        double errorSum = 0.0;
+        constexpr double twopi = 6.283185;
+        for (const auto& e : edgeAngles) {
+            MinimalValue<double> minAngleDiffSquare(std::numeric_limits<double>::max());
+            for (int iAngleParam = 0; iAngleParam < 2; ++iAngleParam) {
+                minAngleDiffSquare.Min(std::pow(e - anglePair[iAngleParam], 2.0));
+                minAngleDiffSquare.Min(std::pow(e - twopi + anglePair[iAngleParam], 2.0));
+            }
+            errorSum += minAngleDiffSquare.value;
         }
+
+        return errorSum;
     }
-    THROW("Should be unreachable code. Couldn't initialize angle phi.");
-
-    return 0.0;
-}
-
-double compute_angle_pair_error(
-    const std::vector<double>& edgeDirections,
-    const double phi, const double omega)
-{
-    double errorSum = 0;
-    for (const double edgeAngle : edgeDirections) {
-        double angleDiffMin = std::abs(phi - edgeAngle);
-        angleDiffMin = std::min(angleDiffMin, std::abs(phi  + edgeAngle));
-        angleDiffMin = std::min(angleDiffMin, std::abs(omega - edgeAngle));
-        angleDiffMin = std::min(angleDiffMin, std::abs(omega + edgeAngle));
-
-        errorSum += errorSum;
-    }
-    return errorSum;
-}
-
-std::array<cv::Point2d, 2> find_two_projective_line_means(
-    const std::vector<double>& edgeDirections)
-{
-    // double phi = initialize_phi(edgeDirections);
-    // constexpr double phiOver2 = 1.5707963;
-    // double omega = phiOver2;
-
-    // constexpr int nIterations = 10;
-    // constexpr double phiDelta = 0.01;
-    // constexpr double omegaDelta = 0.01;
-
-    // for (int i = 0; i < nIterations; ++i) {
-        
-    // }
-
-    // std::array<std::array<>>
+};
 
 
-    return std::array<cv::Point2d, 2>();
-}
-
-double to_edgedirection(cv::Point2d p)
+double to_edgeangle(cv::Point2d p)
 {
     const double pNorm = cv::norm(p);
     ASSERT(pNorm != 0.0, "");
@@ -104,11 +76,16 @@ double to_edgedirection(cv::Point2d p)
     return std::atan2(p.y, p.x);
 }
 
-std::array<double, 2> square_edgedirections(const std::vector<cv::Point>& square)
+cv::Point2d angle_to_unitvector(const double edgeAngle)
+{
+    return cv::Point2d(std::cos(edgeAngle), std::sin(edgeAngle));
+}
+
+std::array<double, 2> square_edgeangles(const std::vector<cv::Point>& square)
 {
     std::array<double, 2> ret;
-    ret[0] = to_edgedirection(cv::Point2d((square[1] - square[0]) + (square[2] - square[3])));
-    ret[1] = to_edgedirection(cv::Point2d((square[2] - square[1]) + (square[3] - square[0])));
+    ret[0] = to_edgeangle(cv::Point2d((square[1] - square[0]) + (square[2] - square[3])));
+    ret[1] = to_edgeangle(cv::Point2d((square[2] - square[1]) + (square[3] - square[0])));
 
     return ret;
 }
@@ -116,15 +93,20 @@ std::array<double, 2> square_edgedirections(const std::vector<cv::Point>& square
 std::array<cv::Point2d, 2> find_dominant_edgedirections(
     const std::vector<std::vector<cv::Point>>& squares)
 {
-    std::vector<double> edgeDirections;
-    edgeDirections.reserve(2 * squares.size());
+    std::vector<double> edgeAngles;
+    edgeAngles.reserve(2 * squares.size());
     for (const auto& square : squares) {
-        const auto edgeDirectionsOfSquare = square_edgedirections(square);
-        edgeDirections.push_back(edgeDirectionsOfSquare[0]);
-        edgeDirections.push_back(edgeDirectionsOfSquare[1]);
+        const auto anglePair = square_edgeangles(square);
+        edgeAngles.push_back(anglePair[0]);
+        edgeAngles.push_back(anglePair[1]);
     }
 
-    return std::array<cv::Point2d, 2>();
+    const auto bestEdgeAnglePair = EdgeAngleFitter().Fit(edgeAngles);
+
+    return std::array<cv::Point2d, 2>{
+        angle_to_unitvector(bestEdgeAnglePair[0]),
+        angle_to_unitvector(bestEdgeAnglePair[1])
+    };
 }
 
 std::vector<std::vector<cv::Point>> complete_missing_squares(

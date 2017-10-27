@@ -138,65 +138,26 @@ void SimplexOptimizer::Impl::Optimize(
         indexErrorPairs[iSimplex].error = errorFunction(simplex[iSimplex]);
     }
 
-    // LOG("simplex");
-    // for (const auto& node : simplex) {
-    //     std::stringstream ss;
-    //     for (const auto& e : node) {
-    //         ss << e << " ";
-    //     }
-    //     LOG(ss.str());
-    // }
-
-    // LOG("indexerrorpairs");
-    // for (const auto& p : indexErrorPairs) {
-    //     LOG(p.index << ", " << p.error);
-    // }
-    
-
-    // PrintSimplex(errorFunction);
     for (size_t iIter = 0; iIter < config.maxIterations; ++iIter) {
         simplexCopy = simplex;
         for (size_t iSimplex = 0; iSimplex < nSimplexNodes; ++iSimplex) {
             indexErrorPairs[iSimplex].index = iSimplex;
         }
-        // LOG("====================== iter #" << iIter << " =======================");
         std::sort(indexErrorPairs.begin(), indexErrorPairs.end());
-        // LOG("indexerrorpairs after sorting");
-        // for (const auto& p : indexErrorPairs) {
-        //     LOG(p.index << ", " << p.error);
-        // }
-        // LOG("sorting");
         for (size_t iSimplex = 0; iSimplex < nSimplexNodes; ++iSimplex) {
-            // LOG(ParamVecStr(simplex[iSimplex]) << ", " << errorFunction(simplex[iSimplex])  << "  <-----  " << ParamVecStr(simplexCopy[indexErrorPairs[iSimplex].index]) << ", " << errorFunction(simplexCopy[indexErrorPairs[iSimplex].index]));
             simplex[iSimplex] = simplexCopy[indexErrorPairs[iSimplex].index];
         }
 
-        // LOG("simplex after sorting");
-        // for (const auto& node : simplex) {
-        //     std::stringstream ss;
-        //     for (const auto& e : node) {
-        //         ss << e << " ";
-        //     }
-        //     LOG(ss.str() << "value: " << errorFunction(node));
-        // }
-
-        // LOG("lowest simplex: " << ParamVecStr(simplex[0]) << ": " << errorFunction(simplex[0]));
-        // LOG("second highest simplex: " << ParamVecStr(*(simplex.rbegin() + 1)) << ": " << errorFunction(*(simplex.rbegin() + 1)));
-        // LOG("highest simplex: " << ParamVecStr(simplex.back()) << ": " << errorFunction(simplex.back()));
-
         ComputeCentroid();
-        // LOG("centroid: " << ParamVecStr(centroid) << ", " << errorFunction(centroid));    
         ComputeReflectionPoint(config.reflection);
         reflection.error = errorFunction(reflection.value);
-        // LOG("reflection point: " << ParamVecStr(reflection.value));
-        // LOG(DESC(reflection.error));
 
         bool needToShrink = false;
 
         if (indexErrorPairs[0].error <= reflection.error &&
             reflection.error < (indexErrorPairs.rbegin() + 1)->error) 
         {
-            LOG("reflection");
+            // LOG("reflection");
             simplex.back() = reflection.value;
             indexErrorPairs.back().error = reflection.error;
         }       
@@ -204,12 +165,12 @@ void SimplexOptimizer::Impl::Optimize(
             ComputeExpansionPoint(config.expansion);
             expansion.error = errorFunction(expansion.value);
             if (expansion.error < reflection.error) {
-                LOG("expansion");
+                // LOG("expansion");
                 simplex.back() = expansion.value;
                 indexErrorPairs.back().error = expansion.error;
             }
             else {
-                LOG("reflection in expansion");
+                // LOG("reflection in expansion");
                 simplex.back() = reflection.value;
                 indexErrorPairs.back().error = reflection.error;
             }
@@ -220,12 +181,12 @@ void SimplexOptimizer::Impl::Optimize(
             ComputeOutsideContractionPoint(config.contraction);
             outsideContraction.error = errorFunction(outsideContraction.value);
             if (outsideContraction.error <= reflection.error) {
-                LOG("outside contraction");
+                // LOG("outside contraction");
                 simplex.back() = outsideContraction.value;
                 indexErrorPairs.back().error = outsideContraction.error;
             }
             else {
-                LOG("shrinkage instead of outside contraction");
+                // LOG("shrinkage instead of outside contraction");
                 needToShrink = true;
             }
         }
@@ -233,12 +194,12 @@ void SimplexOptimizer::Impl::Optimize(
             ComputeInsideContractionPoint(config.contraction);
             insideContraction.error = errorFunction(insideContraction.value);
             if (insideContraction.error < indexErrorPairs.back().error) {
-                LOG("inside contraction");
+                // LOG("inside contraction");
                 simplex.back() = insideContraction.value;
                 indexErrorPairs.back().error = insideContraction.error;
             }
             else {
-                LOG("shrinkage instead of inside contraction");
+                // LOG("shrinkage instead of inside contraction");
                 needToShrink = true;
             }
         }
