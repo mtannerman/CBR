@@ -3,6 +3,8 @@
 #include "common/exceptions.h"
 #include <cmath>
 #include "math_utils/simplex_optimizer.h"
+#include "common/viz2d.h"
+#include "common/config.h"
 
 namespace cbr
 {
@@ -90,6 +92,37 @@ std::array<double, 2> square_edgeangles(const std::vector<cv::Point>& square)
     return ret;
 }
 
+void visualize_dominant_edge_directions(
+    const std::vector<std::vector<cv::Point>>& squares,
+    const std::array<cv::Point2d, 2>& dominantEdges)
+{
+    viz::Visualizer2D vizWindow(STR("dbg" << __FILE__ << " " << __PRETTY_FUNCTION__));
+    
+    cv::Point center;
+    double edgeLength = 0;
+    for (const auto& square : squares) {
+        for (const auto& corner : square) {
+            vizWindow.AddCircle(corner, 5, cv::Scalar(255, 0, 0));
+            center += corner;
+        }
+        for (int i = 0; i < 4; ++i) {
+            const auto& prevCorner = square[i];
+            const auto nextIndex = ((i + 1) == 4 ? 0 : 1);
+            const auto& currCorner = square[nextIndex];
+            edgeLength += cv::norm(currCorner - prevCorner);
+        }
+    }
+
+    center /= int(4 * squares.size());
+    edgeLength /= (4.0 * double(squares.size()));
+
+    vizWindow.AddArrow(center, center + 4 * edgeLength * cv::Point(dominantEdges[0]), cv::Scalar(0, 0, 255));
+    vizWindow.AddArrow(center, center + 4 * edgeLength * cv::Point(dominantEdges[1]), cv::Scalar(0, 0, 255));
+
+    vizWindow.Spin();
+}
+
+
 std::array<cv::Point2d, 2> find_dominant_edgedirections(
     const std::vector<std::vector<cv::Point>>& squares)
 {
@@ -102,11 +135,16 @@ std::array<cv::Point2d, 2> find_dominant_edgedirections(
     }
 
     const auto bestEdgeAnglePair = EdgeAngleFitter().Fit(edgeAngles);
-
-    return std::array<cv::Point2d, 2>{
+    const auto dominantEdges = std::array<cv::Point2d, 2>{
         angle_to_unitvector(bestEdgeAnglePair[0]),
         angle_to_unitvector(bestEdgeAnglePair[1])
     };
+
+    if (Config::GetInstance().visualizeDominantEdgeDirections) {
+        visualize_dominant_edge_directions(squares, dominantEdges);
+    }
+
+    return dominantEdges;
 }
 
 std::vector<std::vector<cv::Point>> complete_missing_squares(

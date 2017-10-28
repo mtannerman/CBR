@@ -4,6 +4,7 @@
 #include <sstream>
 
 #define STR(expression) (((::std::ostringstream *)&(::std::ostringstream() << "" << expression))->str())
+// #define LOG(msg) ::cbr::common_detail::Log(__PRETTY_FUNCTION__, STR(msg));
 #define LOG(msg) ::cbr::common_detail::Log(__FUNCTION__, STR(msg));
 
 #define DESC(x) #x << ": " << x
@@ -35,6 +36,6 @@ std::string CollectionToStr(const CollectionT& collection, ToStringF toStringFun
 
 namespace common_detail
 {
-void Log(const std::string &function, const std::string &message);
+void Log(const std::string& function, const std::string& message);
 }
 }

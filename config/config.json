@@ -5,6 +5,7 @@
     ],
     "visualize":
     [
-        // "squareOverlap"
+        // "squareOverlap",
+        "dominantEdgeDirections"
     ]
 }

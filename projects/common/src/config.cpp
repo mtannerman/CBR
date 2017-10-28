@@ -7,6 +7,8 @@
 namespace cbr
 {
 
+//  TODO: remove trailing commas in lists
+
 bool is_line_commented(const std::string& line)
 {
     return line.find("//") != std::string::npos;
@@ -64,6 +66,10 @@ void read_visualization_options(Config& config, const rapidjson::Document& doc)
             LOG("\t" << name);
             if (name == "squareOverlap") {
                 config.visualizeSquareFiltering = true;
+                ++nVisOptions;
+            }
+            else if (name == "dominantEdgeDirections") {
+                config.visualizeDominantEdgeDirections = true;
                 ++nVisOptions;
             }
             else {

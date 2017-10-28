@@ -17,6 +17,7 @@ public:
 
     // visualization
     bool visualizeSquareFiltering = false;
+    bool visualizeDominantEdgeDirections = false;
 private:
     Config() = default;
 };

@@ -72,7 +72,8 @@ double compute_square_edge_length_average(const std::vector<std::vector<cv::Poin
     return edgeLengthSum / double(squares.size()) / 4.0;
 }
 
-std::vector<cv::Point2f> find_corner_cluster_centers(const std::vector<std::vector<cv::Point>>& squares)
+std::vector<cv::Point2f> find_corner_cluster_centers(
+    const std::vector<std::vector<cv::Point>>& squares)
 {
     const auto corners = squares_to_corners(squares);
     const double squareEdgeLengthAverage = compute_square_edge_length_average(squares);
@@ -104,7 +105,7 @@ std::vector<cv::Point2f> find_corner_cluster_centers(const std::vector<std::vect
     }
 
     if (Config::GetInstance().visualizeSquareFiltering) {
-        viz::Visualizer2D vizWindow(STR("dbg" << __FUNCTION__));
+        viz::Visualizer2D vizWindow(STR("dbg" << __FILE__ << " " << __PRETTY_FUNCTION__));
 
         for (const auto& c : cornerClusters) {
             vizWindow.AddCircle(c.mean, 5, cv::Scalar(255, 0, 0));

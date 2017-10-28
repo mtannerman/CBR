@@ -210,7 +210,9 @@ void SimplexOptimizer::Impl::Optimize(
                 indexErrorPairs[iSimplex].error = errorFunction(simplex[iSimplex]);
             }
         }
-        // PrintSimplex(errorFunction);
+
+        LOG("after iter " << iIter);
+        PrintSimplex(errorFunction);
 
     }
 
