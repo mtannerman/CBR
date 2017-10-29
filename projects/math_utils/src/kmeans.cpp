@@ -6,14 +6,11 @@ namespace cbr
 
 struct KMeansComputer::Impl
 {
-    Impl(const size_t k) k(k) {}
+    Impl(const size_t k) : k(k) {}
 
     std::vector<std::vector<double>> Fit(
         const std::vector<std::vector<double>>& points,
         KMeansComputer::Config& config);
-
-    std::vector<std::vector<double>>& GetCenters(); 
-    const std::vector<std::vector<double>>& GetCenters();
 
     size_t k;
 
@@ -21,7 +18,10 @@ struct KMeansComputer::Impl
 };
 
 std::vector<std::vector<double>> KMeansComputer::Fit(
-    const std::vector<std::vector<double>>& points);
+    const std::vector<std::vector<double>>& points)
+{
+    return std::vector<std::vector<double>>();
+}
 
 std::vector<std::vector<double>>& KMeansComputer::GetCenters()
 {
@@ -34,7 +34,7 @@ const std::vector<std::vector<double>>& KMeansComputer::GetCenters() const
 
 
 KMeansComputer::KMeansComputer(const size_t k)
-    : : mImpl(new Impl(k))
+    : mImpl(new Impl(k))
 {
 }
 
