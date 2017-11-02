@@ -37,13 +37,12 @@ void KMeansComputer::Impl::AssignLabels(const std::vector<std::vector<double>>& 
 {
     for (size_t i = 0; i < points.size(); ++i) {
         const auto closest = std::min_element(centers.begin(), centers.end(),
-            [i](const std::vector<double>& p1, const std::vector<double>& p2)
-        {});
-        // labels[i] = std::distance(std::min_element(centers.begin(), centers.end(), 
-        //     [i](const std::vector<double>& p1, const std::vector<double>& p2)
-        //     {
+            [i, &points](const std::vector<double>& c1, const std::vector<double>& c2)
+        {
+            return norm(c1, points[i]) < norm(c2, points[i]);
+        });
 
-        //     };), centers.begin());
+        labels[i] = std::distance(closest, centers.begin());
     }
 }
 
