@@ -4,17 +4,21 @@
 #include <fstream>
 #include <sstream>
 
+#define PARSE_BOOL_LINE(entry, propertyName, configVariable)\
+    if (entry.HasMember(propertyName)) {\
+        configVariable = entry[propertyName].GetBool();\
+    }\
+
 namespace cbr
 {
 
-//  TODO: remove trailing commas in lists
 
 bool is_line_commented(const std::string& line)
 {
     return line.find("//") != std::string::npos;
 }
 
-std::string read_config_file(const std::string& fileName)
+std::string read_json_document(const std::string& fileName)
 {
     std::ifstream s(fileName);
     ASSERT(s.is_open(), "Cannot open config file.");
@@ -34,51 +38,24 @@ std::string read_config_file(const std::string& fileName)
 
 void read_tests(Config& config, const rapidjson::Document& doc)
 {
-    int nTests = 0;
     LOG("reading tests:");
     if (doc.HasMember("tests")) {
         const auto& testArray = doc["tests"];
         for (const auto& test : testArray.GetArray()) {
-            const auto testName = std::string(test.GetString());
-            LOG("\t" << testName);
-            if (testName == "imgProcSquareOverlapTest") {
-                config.testImgProcSquareOverlap = true;
-                ++nTests;
-            }
-            else {
-                LOG("Unknown test: " << testName);
-            }
+            PARSE_BOOL_LINE(test, "squareOverlap", config.testImgProcSquareOverlap);
         }
-    }
-
-    if (nTests == 0) {
-        LOG("No tests given.");
     }
 }
 
 void read_visualization_options(Config& config, const rapidjson::Document& doc)
 {
-    int nVisOptions = 0;
     LOG("reading visualization options:");
     if (doc.HasMember("visualize")) {
-        for (const auto& v : doc["visualize"].GetArray()) {
-            const auto name = std::string(v.GetString());
-            LOG("\t" << name);
-            if (name == "squareOverlap") {
-                config.visualizeSquareFiltering = true;
-                ++nVisOptions;
-            }
-            else if (name == "dominantEdgeDirections") {
-                config.visualizeDominantEdgeDirections = true;
-                ++nVisOptions;
-            }
-            else {
-                LOG("Unknown option: " << name);
-            }
+        const auto& visualizationArray = doc["visualize"].GetArray();
+        for (const auto& v : visualizationArray) {
+            PARSE_BOOL_LINE(v, "squareFiltering", config.visualizeSquareFiltering);
+            PARSE_BOOL_LINE(v, "dominantEdgeDirections", config.visualizeDominantEdgeDirections);
         }
-    }
-    if (nVisOptions == 0) {
-        LOG("No visualization options given.");
     }
 }
 
@@ -86,7 +63,7 @@ void Config::ParseFile(const std::string& path)
 {
     LOG(DESC(path));
     ASSERT(path != "", "configPath must be set.");
-    const auto configFileContent = read_config_file(path);
+    const auto configFileContent = read_json_document(path);
     rapidjson::Document doc;
     LOG("Parsing config file.");
     doc.Parse(configFileContent.c_str());

@@ -1,11 +1,11 @@
 {
     "tests":
     [
-        // "imgProcSquareOverlapTest"
+        {"squareOverlap": false}
     ],
     "visualize":
     [
-        // "squareOverlap",
-        "dominantEdgeDirections"
+        {"squareFiltering": false},
+        {"dominantEdgeDirections": false}
     ]
 }

@@ -3,6 +3,7 @@
 #include "common/exceptions.h"
 #include <cmath>
 #include "math_utils/functional.h"
+#include "common/config.h"
 
 namespace cbr
 {
@@ -62,14 +63,13 @@ void KMeansComputer::Impl::AssignLabels(
     const std::vector<std::vector<double>>& points)
 {
     FillCollection(numberOfLabelOccurrence, 0);
-
     for (size_t i = 0; i < points.size(); ++i) {
         const auto closest = std::min_element(centers.begin(), centers.end(),
-            [i, &points](const std::vector<double>& c1, const std::vector<double>& c2)
+        [i, &points](const std::vector<double>& c1, const std::vector<double>& c2)
         {
             return norm(c1, points[i]) < norm(c2, points[i]);
         });
-
+        
         const size_t centerIdx = std::distance(centers.begin(), closest);
         labels[i] = centerIdx;
         numberOfLabelOccurrence[centerIdx]++;
@@ -107,6 +107,7 @@ std::vector<std::vector<double>> KMeansComputer::Impl::Fit(
     const std::vector<std::vector<double>>& points,
     KMeansComputer::Config& config)
 {
+    labels = std::vector<size_t>(points.size());
     ASSERT(areCentersInitialized, "");
     for (size_t iIter = 0; iIter < config.maxIterations; ++iIter) {
         DoIteration(points);
