@@ -5,15 +5,11 @@
 
 namespace cbr
 {
-
-// std::vector<std::vector<double>> find_kmeans_centers(
-//     const std::vector<std::vector<double>>& points)
-// {
-
 class KMeansComputer
 {
 public:
     KMeansComputer(const size_t k);
+    ~KMeansComputer();
     std::vector<std::vector<double>> Fit(
         const std::vector<std::vector<double>>& points);
 

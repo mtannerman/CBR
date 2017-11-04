@@ -109,10 +109,10 @@ std::vector<std::vector<double>> KMeansComputer::Impl::Fit(
 {
     ASSERT(areCentersInitialized, "");
     for (size_t iIter = 0; iIter < config.maxIterations; ++iIter) {
-        
+        DoIteration(points);
     }
 
-    return std::vector<std::vector<double>>();
+    return centers;
 }
 
 std::vector<std::vector<double>> KMeansComputer::Fit(
@@ -144,5 +144,8 @@ KMeansComputer::KMeansComputer(const size_t k)
     : mImpl(new Impl(k))
 {
 }
+
+KMeansComputer::~KMeansComputer()
+{}
 
 }
