@@ -28,6 +28,7 @@ struct KMeansComputer::Impl
     size_t k;
 
     void AssignLabels(const std::vector<std::vector<double>>& points);
+    void AdjustCenters(const std::vector<std::vector<double>>& points);
 
     std::vector<size_t> labels;
     std::vector<std::vector<double>> centers;
@@ -46,6 +47,12 @@ void KMeansComputer::Impl::AssignLabels(const std::vector<std::vector<double>>& 
     }
 }
 
+void KMeansComputer::Impl::AdjustCenters(const std::vector<std::vector<double>>& points)
+{
+    for (size_t iCenter = 0; iCenter < centers.size(); ++iCenters) {
+        
+    }
+}
 
 std::vector<std::vector<double>> KMeansComputer::Impl::Fit(
     const std::vector<std::vector<double>>& points,
