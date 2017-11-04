@@ -213,4 +213,12 @@ std::string collection_to_string(const Collection& coll,
     return ss.str();
 }
 
+template <typename Collection>
+void FillCollection(Collection& coll, const typename Collection::value_type& value)
+{
+    for (auto& elem : coll) {
+        elem = value;
+    }
+}
+
 }// cbr

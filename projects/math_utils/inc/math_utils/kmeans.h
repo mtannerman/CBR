@@ -24,6 +24,9 @@ public:
     std::vector<std::vector<double>>& GetCenters(); 
     const std::vector<std::vector<double>>& GetCenters() const;
 
+    bool& AreCentersInitialized();
+    const bool AreCentersInitialized() const;
+
     Config config;
 
 private:
