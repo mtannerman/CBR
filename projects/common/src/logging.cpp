@@ -34,7 +34,7 @@ private:
 	{
 		const auto path = LogArchivePath();
 		ASSERT(CreateDirectory(path), STR("Couldn't create directory: " << path));
-		ofs.reset(new std::ofstream(STR(path << "/log.txt"), std::ofstream::out));
+		ofs.reset(new std::ofstream(STR(path << "/log.txt"), std::ofstream::out | std::ofstream::app));
 	}
 	std::unique_ptr<std::ofstream> ofs;
 };
