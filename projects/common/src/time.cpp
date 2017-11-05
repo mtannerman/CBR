@@ -1,34 +1,42 @@
 #include "common/time.h"
+#include <ctime>
+#include <iomanip>
+#include "common/logging.h"
 
 namespace cbr
 {
-    int64_t Time::ToSeconds() const
-    {
-		return 3600LL * hour + 60LL * min + sec;
-    }
+
+std::string GetDateTimeStr()
+{
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    return STR(std::put_time(&tm, "%Y-%m-%d-%H-%M-%S"));
+}
     
 
-    Time Time::FromSeconds(int64_t seconds)
-    {
-		int64_t h, m, s;
-		h = seconds / 3600LL;
-		seconds -= h * 3600LL;
+int64_t Time::ToSeconds() const
+{
+	return 3600LL * hour + 60LL * min + sec;
+}
 
-		m = seconds / 60LL;
-		seconds -= m * 60LL;
+Time Time::FromSeconds(int64_t seconds)
+{
+	int64_t h, m, s;
+	h = seconds / 3600LL;
+	seconds -= h * 3600LL;
+	m = seconds / 60LL;
+	seconds -= m * 60LL;
+	s = seconds;
+	return Time(h, m, s, 0LL);
+}
 
-		s = seconds;
-
-		return Time(h, m, s, 0LL);
-    }
-    
-    Time Time::FromMilliSeconds(int64_t seconds)
-    {
-		const auto millisecs = seconds % 1000LL;
-		auto t = FromSeconds(seconds / 1000LL);
-		t.millisec = millisecs;
-		return t;
-    }
+Time Time::FromMilliSeconds(int64_t seconds)
+{
+	const auto millisecs = seconds % 1000LL;
+	auto t = FromSeconds(seconds / 1000LL);
+	t.millisec = millisecs;
+	return t;
+}
 }
 
 std::string ZeroExtendedString(const int64_t val, const int nDigits = 2)

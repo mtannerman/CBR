@@ -4,7 +4,7 @@
 #include "common/logging.h"
 #include "sys/types.h"
 #include "sys/stat.h"
-
+#include "common/time.h"
 
 namespace cbr {
 namespace playground {
@@ -57,10 +57,12 @@ void StartFileOperationPlayground()
         // LOG(DESC(CreateDirectory("../process/template2")));
         // LOG(DESC(CreateDirectory("../process/template3")));
         // LOG(DESC(CreateDirectory("../process/template2/template2p1")));
-        LOG(DESC(__FUNCTION__));
-        LOG(DESC(__PRETTY_FUNCTION__));
-        auto l = [](){ LOG("in l()"); };
-        l();
+        // LOG(DESC(__FUNCTION__));
+        // LOG(DESC(__PRETTY_FUNCTION__));
+        // auto l = [](){ LOG("in l()"); };
+        // l();
+
+        LOG(GetDateTimeStr());
 
         // LOG(DESC());
     #endif

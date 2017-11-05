@@ -10,6 +10,7 @@ SET(COMMON_INC
 	inc/common/cyclic_container.h
 	inc/common/exceptions.h
 	inc/common/logging.h
+	inc/common/file_operation.h
 	inc/common/playground/json_playground.h
 	inc/common/playground/file_operation_playground.h)
 
@@ -20,6 +21,7 @@ SET(COMMON_SRC
     src/cyclic_container.cpp
     src/exceptions.cpp
     src/time.cpp
+    src/file_operation.cpp
     src/playground/json_playground.cpp
     src/playground/file_operation_playground.cpp)
     

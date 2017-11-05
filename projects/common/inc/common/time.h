@@ -6,6 +6,9 @@
 
 namespace cbr
 {
+
+std::string GetDateTimeStr();
+
 struct Time
 {
 	int64_t ToSeconds() const;
