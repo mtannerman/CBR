@@ -4,6 +4,9 @@
 #include <cmath>
 #include "math_utils/functional.h"
 #include "common/config.h"
+#include "opencv2/highgui.hpp"
+
+#include "common/viz2d.h"
 
 namespace cbr
 {
@@ -107,10 +110,17 @@ std::vector<std::vector<double>> KMeansComputer::Impl::Fit(
     const std::vector<std::vector<double>>& points,
     KMeansComputer::Config& config)
 {
+    
     labels = std::vector<size_t>(points.size());
     ASSERT(areCentersInitialized, "");
     for (size_t iIter = 0; iIter < config.maxIterations; ++iIter) {
         DoIteration(points);
+    }
+
+    const std::string imageName = STR(__FUNCTION__ << "dbg" << i++);
+    viz::Visualizer2D vizWindow(imageName);
+    for (const auto& point : points) {
+        const auto p = cv::Point(int(point[0]), int(point[0]));
     }
 
     return centers;
