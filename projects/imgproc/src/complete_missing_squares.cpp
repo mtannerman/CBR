@@ -5,6 +5,7 @@
 #include "math_utils/kmeans.h"
 #include "common/viz2d.h"
 #include "common/config.h"
+#include "opencv2/highgui.hpp"
 
 namespace cbr
 {
@@ -18,54 +19,55 @@ struct EdgeAngleFitter
         for (int i = 0; i < 4; ++i) {
             centers[i] = edges[i];
         }
+
         kMeansComputer.AreCentersInitialized() = true;
-        return kMeansComputer.Fit(edges);
+        const auto dominantEdges = kMeansComputer.Fit(edges);
+
+        if (Config::GetInstance().visualizeDominantEdgeDirections) {
+            VisualizeKmeans(edges, dominantEdges);
+        }
+
+        return dominantEdges;
+    }
+
+    void VisualizeKmeans(const std::vector<std::vector<double>>& edges, 
+        const std::vector<std::vector<double>>& dominantEdges)
+    {
+        const std::string imageName = STR(__PRETTY_FUNCTION__ << "dbg");
+        viz::Visualizer2D vizWindow(imageName);
+        LOG(DESC(edges.size()));
+        for (const auto& point : edges) {
+            const auto p = cv::Point(int(point[0]), int(point[1]));
+            vizWindow.AddCircle(p, 2, viz::Color::red());
+        }
+    
+        for (const auto& point : dominantEdges) {
+            const auto p = cv::Point(int(point[0]), int(point[1]));
+            vizWindow.AddCircle(p, 2, viz::Color::yellow());
+        }
+    
+        cv::namedWindow(imageName, cv::WINDOW_AUTOSIZE);
+        const auto image = vizWindow.CreateImage();
+        cv::imshow(imageName, image);
+        cv::waitKey();
     }
 };
 
-void visualize_dominant_edge_directions(
-    const std::vector<std::vector<cv::Point>>& squares,
-    const std::vector<std::vector<double>>& edgeClusterCenters)
+void set_edge_vector(std::vector<double>& edgeVec, 
+    const cv::Point& p1, 
+    const cv::Point& p2)
 {
-    viz::Visualizer2D vizWindow(STR("dbg" << __FILE__ << " " << __PRETTY_FUNCTION__));
-    
-    cv::Point center;
-    double edgeLength = 0;
-    for (const auto& square : squares) {
-        for (const auto& corner : square) {
-            vizWindow.AddCircle(corner, 5, cv::Scalar(255, 0, 0));
-            center += corner;
-        }
-        for (int i = 0; i < 4; ++i) {
-            const auto& prevCorner = square[i];
-            const auto nextIndex = ((i + 1) == 4 ? 0 : 1);
-            const auto& currCorner = square[nextIndex];
-            edgeLength += cv::norm(currCorner - prevCorner);
-        }
-    }
+    auto diffVec = cv::Point2d(p2 - p1);
 
-    center /= int(4 * squares.size());
-    edgeLength /= (4.0 * double(squares.size()));
-
-    for (int i = 0; i < 4; ++i) {
-        const auto edge = cv::Point(int(edgeClusterCenters[i][0]), (edgeClusterCenters[i][1]));
-        vizWindow.AddArrow(center, center + 4 * edgeLength * cv::Point(edge), cv::Scalar(0, 0, 255));
-    }
-
-    vizWindow.Spin();
-}
-
-void set_edge_vector(std::vector<double>& edgeVec, const cv::Point& p1, const cv::Point& p2)
-{
-    edgeVec[0] = p2.x - p1.x;
-    edgeVec[1] = p2.y - p1.y;
+    edgeVec[0] = diffVec.x;
+    edgeVec[1] = diffVec.y;
 }
 
 std::array<cv::Point2d, 2> find_dominant_edgedirections(
     const std::vector<std::vector<cv::Point>>& squares)
 {
     const size_t numberOfEdges = squares.size() * 4;
-    std::vector<std::vector<double>> edges(2 * numberOfEdges, std::vector<double>(2, 0.0));
+    std::vector<std::vector<double>> edges(numberOfEdges, std::vector<double>(2, 0.0));
     size_t iEdge = 0;
     std::vector<double> edgeVec(2);
     for (const auto& square : squares) {
@@ -75,18 +77,11 @@ std::array<cv::Point2d, 2> find_dominant_edgedirections(
             edges[iEdge][0] = edgeVec[0]; 
             edges[iEdge][1] = edgeVec[1]; 
             ++iEdge;
-            edges[iEdge][0] = -edgeVec[0]; 
-            edges[iEdge][1] = -edgeVec[1];
-            ++iEdge;            
         }
     }
 
 
     const auto edgeClusterCenters = EdgeAngleFitter().Fit(edges);
-
-    if (Config::GetInstance().visualizeDominantEdgeDirections) {
-        visualize_dominant_edge_directions(squares, edgeClusterCenters);
-    }
 
     return std::array<cv::Point2d, 2>();
 }
