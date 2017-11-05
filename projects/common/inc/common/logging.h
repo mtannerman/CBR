@@ -5,12 +5,16 @@
 
 #define STR(expression) (((::std::ostringstream *)&(::std::ostringstream() << "" << expression))->str())
 // #define LOG(msg) ::cbr::common_detail::Log(__PRETTY_FUNCTION__, STR(msg));
-#define LOG(msg) ::cbr::common_detail::Log(__FUNCTION__, STR(msg));
+#define CBR_FANCY_FUNCTION ::cbr::StripPrettyFunction(__PRETTY_FUNCTION__)
+#define LOG(msg) ::cbr::common_detail::Log(CBR_FANCY_FUNCTION, STR(msg));
+
 
 #define DESC(x) #x << ": " << x
 
 namespace cbr
 {
+
+std::string StripPrettyFunction(std::string prettyFunction);
 
 template <typename CollectionT>
 std::string CollectionToStr(const CollectionT& collection, const std::string delimiter = "")
