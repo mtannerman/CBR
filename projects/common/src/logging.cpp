@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
-#include "common/time.h" 
+#include "common/archive_directory.h" 
 #include <memory>
 #include "common/file_operation.h"
 #include "common/exceptions.h"
@@ -16,7 +16,7 @@ class LogArchiver
 public:
 	static std::string LogArchivePath()
 	{
-		return STR("../process/" << GetDateTimeStr());
+		return ArchiveDirectory::GetInstance().Get();
 	}
 
 	static LogArchiver& GetInstance()
@@ -27,16 +27,16 @@ public:
 
 	void Add(const std::string& logString)
 	{
-		ofs->operator<<(logString.c_str());
+		ofs << logString;
 	}
 private:
 	LogArchiver() 
 	{
 		const auto path = LogArchivePath();
 		ASSERT(CreateDirectory(path), STR("Couldn't create directory: " << path));
-		ofs.reset(new std::ofstream(STR(path << "/log.txt"), std::ofstream::out | std::ofstream::app));
+		ofs.open(STR(path << "/log.txt"));
 	}
-	std::unique_ptr<std::ofstream> ofs;
+	std::ofstream ofs;
 };
 
 

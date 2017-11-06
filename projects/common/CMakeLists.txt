@@ -11,6 +11,8 @@ SET(COMMON_INC
 	inc/common/exceptions.h
 	inc/common/logging.h
 	inc/common/file_operation.h
+	inc/common/counter.h
+	inc/common/archive_directory.h
 	inc/common/playground/json_playground.h
 	inc/common/playground/file_operation_playground.h)
 
@@ -22,6 +24,8 @@ SET(COMMON_SRC
     src/exceptions.cpp
     src/time.cpp
     src/file_operation.cpp
+    src/counter.cpp
+    src/archive_directory.cpp
     src/playground/json_playground.cpp
     src/playground/file_operation_playground.cpp)
     

@@ -33,7 +33,7 @@ struct EdgeAngleFitter
     void VisualizeKmeans(const std::vector<std::vector<double>>& edges, 
         const std::vector<std::vector<double>>& dominantEdges)
     {
-        const std::string imageName = STR(__PRETTY_FUNCTION__ << "dbg");
+        const std::string imageName = STR(CBR_FANCY_FUNCTION << "dbg");
         viz::Visualizer2D vizWindow(imageName);
         LOG(DESC(edges.size()));
         for (const auto& point : edges) {
