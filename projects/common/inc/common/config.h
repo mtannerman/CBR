@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
 #include "common/logging.h"
-#include <map>
+
+#include "common/pimpl.h"
 
 namespace cbr
 {
@@ -14,15 +15,13 @@ class Config
 public:
     static Config& GetInstance();
     void ParseFile(const std::string& path);
+    bool GetBool(const std::string& variableName);
+    ~Config();
 
-    // tests
-    bool testImgProcSquareOverlap = false;
-
-    // visualization
-    bool visualizeSquareFiltering = false;
-    bool visualizeDominantEdgeDirections = false;
 private:
-    Config() = default;
+    Config();
+    struct Impl;
+    impl_ptr<Impl> mImpl;
 };
 
 }

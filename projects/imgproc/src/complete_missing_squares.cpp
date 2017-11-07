@@ -23,7 +23,7 @@ struct EdgeAngleFitter
         kMeansComputer.AreCentersInitialized() = true;
         const auto dominantEdges = kMeansComputer.Fit(edges);
 
-        if (Config::GetInstance().visualizeDominantEdgeDirections) {
+        if (Config::GetInstance().GetBool("visualizeDominantEdgeDirections")) {
             VisualizeKmeans(edges, dominantEdges);
         }
 

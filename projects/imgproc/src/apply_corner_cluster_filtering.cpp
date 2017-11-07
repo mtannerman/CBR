@@ -104,8 +104,8 @@ std::vector<cv::Point2f> find_corner_cluster_centers(
         clusterCenters.push_back(cornerCluster.mean);
     }
 
-    if (Config::GetInstance().visualizeSquareFiltering) {
-        viz::Visualizer2D vizWindow(STR("dbg" << __FILE__ << " " << __PRETTY_FUNCTION__));
+    if (Config::GetInstance().GetBool("visualizeSquareFiltering")) {
+        viz::Visualizer2D vizWindow("squareFiltering");
 
         for (const auto& c : cornerClusters) {
             vizWindow.AddCircle(c.mean, 5, cv::Scalar(255, 0, 0));
@@ -177,7 +177,7 @@ std::vector<std::vector<cv::Point>> apply_cluster_filtering(
     const auto uniqueSquares = 
         collect_unique_squares(squares, cornerClusters);
 
-    if (Config::GetInstance().testImgProcSquareOverlap) {
+    if (Config::GetInstance().GetBool("testImgProcSquareOverlap")) {
         test::TEST_square_filtering_overlap(squares, uniqueSquares);
     }
 

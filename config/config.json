@@ -6,6 +6,6 @@
     "visualize":
     [
         {"squareFiltering": false},
-        {"dominantEdgeDirections": true}
+        {"dominantEdgeDirections": false}
     ]
 }
