@@ -17,6 +17,9 @@ void order_square(std::vector<cv::Point>& square)
 
 void order_squares(std::vector<std::vector<cv::Point>>& squares)
 {
+    for (auto& square : squares) {
+        order_square(square);
+    }
 }
 
 

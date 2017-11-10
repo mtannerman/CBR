@@ -6,6 +6,7 @@
 #include "common/viz2d.h"
 #include "common/config.h"
 #include "opencv2/highgui.hpp"
+#include "math_utils/geometry.h"
 
 namespace cbr
 {
@@ -63,6 +64,31 @@ void set_edge_vector(std::vector<double>& edgeVec,
     edgeVec[1] = diffVec.y;
 }
 
+cv::Point2d vec2Point2d(const std::vector<double>& v)
+{
+    ASSERT(v.size() == 2, "");
+    return cv::Point2d(v[0], v[1]);  
+}
+
+std::array<cv::Point2d, 2> choose_two_dominant_edge_cluster_centers(
+    std::vector<std::vector<double>> edgeClusterCenters)
+{
+    auto rightMostIt = std::max_element(edgeClusterCenters.begin(), edgeClusterCenters.end(),
+        [](const std::vector<double>& v1, const std::vector<double>& v2)
+        { return v1[0] < v2[0]; });
+
+    const auto rightMost = vec2Point2d(*rightMostIt);
+
+    edgeClusterCenters.erase(rightMostIt);
+
+    const auto mostVerticalIt = std::min_element(edgeClusterCenters.begin(), edgeClusterCenters.end(),
+        [rightMost](const std::vector<double>& v1, const std::vector<double>& v2)
+        { return compute_rotation_angle(rightMost, vec2Point2d(v1)) < compute_rotation_angle(rightMost, vec2Point2d(v2)); });
+
+    return std::array<cv::Point2d, 2>{rightMost, vec2Point2d(*mostVerticalIt)};
+
+}
+
 std::array<cv::Point2d, 2> find_dominant_edgedirections(
     const std::vector<std::vector<cv::Point>>& squares)
 {
@@ -83,7 +109,8 @@ std::array<cv::Point2d, 2> find_dominant_edgedirections(
 
     const auto edgeClusterCenters = EdgeAngleFitter().Fit(edges);
 
-    return std::array<cv::Point2d, 2>();
+
+    return choose_two_dominant_edge_cluster_centers(edgeClusterCenters);
 }
 
 std::vector<std::vector<cv::Point>> complete_missing_squares(
