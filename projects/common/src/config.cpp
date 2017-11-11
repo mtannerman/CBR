@@ -51,9 +51,8 @@ void Config::Impl::ReadTests(const rapidjson::Document& doc)
     LOG("reading tests:");
     if (doc.HasMember("tests")) {
         const auto& testArray = doc["tests"];
-        for (const auto& test : testArray.GetArray()) {
-            PARSE_BOOL_LINE(test, "squareOverlap", mBools["testImgProcSquareOverlap"]);
-        }
+        PARSE_BOOL_LINE(testArray, "squareOverlap", mBools["testImgProcSquareOverlap"]);
+        PARSE_BOOL_LINE(testArray, "simplexOptimizer", mBools["testSimplexOptimizer"]);
     }
 }
 
@@ -61,11 +60,10 @@ void Config::Impl::ReadVisualizationOptions(const rapidjson::Document& doc)
 {
     LOG("reading visualization options:");
     if (doc.HasMember("visualize")) {
-        const auto& visualizationArray = doc["visualize"].GetArray();
-        for (const auto& v : visualizationArray) {
-            PARSE_BOOL_LINE(v, "squareFiltering", mBools["visualizeSquareFiltering"]);
-            PARSE_BOOL_LINE(v, "dominantEdgeDirections", mBools["visualizeDominantEdgeDirections"]);
-        }
+        const auto& visualizationArray = doc["visualize"];
+        PARSE_BOOL_LINE(visualizationArray, "squareFiltering", mBools["visualizeSquareFiltering"]);
+        PARSE_BOOL_LINE(visualizationArray, "dominantEdgeDirections", mBools["visualizeDominantEdgeDirections"]);
+
     }
 }
 

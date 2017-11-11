@@ -18,21 +18,21 @@ void StartJsonPlayground()
         }
     }
     if (doc.HasMember("collection2")) {
-        const auto& coll2Array = doc["collection2"];
-        for (const auto& entry : coll2Array.GetArray()) {
-            if (entry.HasMember("option1")) {
-                LOG(DESC(entry["option1"].GetBool()));
-            }
-            if (entry.HasMember("option2")) {
-                LOG(DESC(entry["option2"].GetBool()));
-            }
+        const auto& coll2 = doc["collection2"];
+        if (coll2.HasMember("option1")) {
+            LOG(DESC(coll2["option1"].GetBool()));
         }
-        // LOG(DESC(coll2Array.IsObject()));
-        // if (coll2Array.HasMember("option1")) {
-        //     LOG(coll2Array["option1"].GetBool());
-        // }
-        // if (coll2Array.HasMember("option2")) {
-        //     LOG(coll2Array["option2"].GetBool());
+
+        if (coll2.HasMember("option2")) {
+            LOG(DESC(coll2["option2"].GetBool()));
+        }
+        // for (const auto& entry : coll2Array.GetArray()) {
+        //     if (entry.HasMember("option1")) {
+        //         LOG(DESC(entry["option1"].GetBool()));
+        //     }
+        //     if (entry.HasMember("option2")) {
+        //         LOG(DESC(entry["option2"].GetBool()));
+        //     }
         // }
     } 
 }

@@ -1,11 +1,12 @@
 {
     "tests":
-    [
-        {"squareOverlap": false}
-    ],
+    {
+        "squareOverlap": false,
+        "simplexOptimizer": false
+    },
     "visualize":
-    [
-        {"squareFiltering": false},
-        {"dominantEdgeDirections": false}
-    ]
+    {
+        "squareFiltering": false,
+        "dominantEdgeDirections": true
+    }
 }

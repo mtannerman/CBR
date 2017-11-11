@@ -106,9 +106,7 @@ std::array<cv::Point2d, 2> find_dominant_edgedirections(
         }
     }
 
-
     const auto edgeClusterCenters = EdgeAngleFitter().Fit(edges);
-
 
     return choose_two_dominant_edge_cluster_centers(edgeClusterCenters);
 }

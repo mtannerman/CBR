@@ -22,7 +22,7 @@ MESSAGE(STATUS "Compiler id: ${CMAKE_CXX_COMPILER_ID}")
 
 # Treat warning as error
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -O2")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-error=unused-variable -Werror -O2")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
