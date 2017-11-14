@@ -12,6 +12,7 @@ include_directories(../common/inc)
 include_directories(../imgproc/inc)
 include_directories(../recog/inc)
 include_directories(../math_utils/inc)
+include_directories(../cbr_test/inc)
 
 ADD_EXECUTABLE(CBRMain ${SRC} ${INC})
 set(CBRMainTargets "")
@@ -19,6 +20,7 @@ LIST(APPEND CBRMainTargets common)
 LIST(APPEND CBRMainTargets imgproc)
 LIST(APPEND CBRMainTargets recog)
 LIST(APPEND CBRMainTargets math_utils)
+LIST(APPEND CBRMainTargets cbr_test)
 TARGET_LINK_LIBRARIES(CBRMain ${CBRMainTargets} ${OpenCV_LIBS})
 
 # OpenCV

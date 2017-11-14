@@ -1,4 +1,8 @@
 {
+    "images": 
+    [
+        "3d/octagon/0.jpg"
+    ],
     "tests":
     {
         "squareOverlap": false,
@@ -7,6 +11,6 @@
     "visualize":
     {
         "squareFiltering": false,
-        "dominantEdgeDirections": true
+        "dominantEdgeDirections": false
     }
 }

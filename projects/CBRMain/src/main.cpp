@@ -2,16 +2,16 @@
 #include "common/config.h"
 #include "imgproc/read_image.h"
 #include "common/logging.h"
-#include "math_utils/tests/simplex_optimizer_unittest.h"
 #include "common/playground/json_playground.h"
+#include "cbr_test/test.h"
+#include "common/file_operation.h"
 
-int main()
+
+int main(int argc, char *argv[])
 {
-	cbr::playground::StartJsonPlayground();
-
-	const std::string configFilePath = "/home/timarmate/Projects/CBR/config/config.json";
-    ::cbr::Config::GetInstance().ParseFile(configFilePath);
-	const std::string fileName = "/home/timarmate/Projects/CBR/input/3d/octagon/0.jpg";
+	::cbr::Config::GetInstance().ParseFile(configFilePath);
+	const auto images = ::cbr::Config::GetInstance().GetStringList("images");
+	const std::string fileName = images[0];
 	auto image = cbr::read_image(fileName);
 	cbr::find_board(image);
 

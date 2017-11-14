@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
-#include "common/logging.h"
 
 #include "common/pimpl.h"
+#include <vector>
 
 namespace cbr
 {
@@ -16,6 +16,8 @@ public:
     static Config& GetInstance();
     void ParseFile(const std::string& path);
     bool GetBool(const std::string& variableName);
+    std::vector<std::string> GetStringList(const std::string& variableName);
+    
     ~Config();
 
 private:

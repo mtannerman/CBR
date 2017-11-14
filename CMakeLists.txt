@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 project(CBR)
 
+enable_testing()
+
 MACRO(COPY_DLL trgt lib)
 	ADD_CUSTOM_COMMAND (
 		TARGET ${trgt}
@@ -36,7 +38,9 @@ set(PROJECTS
 	math_utils
 	common
 	imgproc
-	recog)
+	recog
+	cbr_test
+	)
 
 
 set(OpenCV_DIR ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/opencv)
