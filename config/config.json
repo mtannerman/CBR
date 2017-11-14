@@ -5,8 +5,7 @@
     ],
     "tests":
     {
-        "squareOverlap": false,
-        "simplexOptimizer": false
+        "simplexOptimizer": true
     },
     "visualize":
     {

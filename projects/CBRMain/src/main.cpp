@@ -11,14 +11,13 @@ int main(int argc, char *argv[])
 {
 	const std::string configFilePath = argv[1];
 	::cbr::Config::GetInstance().ParseFile(configFilePath);
+
+	::cbr::test::RunTests();
+
 	const auto images = ::cbr::Config::GetInstance().GetStringList("images");
 	const std::string fileName = images[0];
 	auto image = cbr::read_image(fileName);
 	cbr::find_board(image);
-
-	// if (cbr::Config::GetInstance().GetBool("testSimplexOptimizer")) {
-		// cbr::run_simplex_optimizer_unittest();
-	// }
 
 	LOG("Finished successfully");
 

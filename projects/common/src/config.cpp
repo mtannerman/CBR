@@ -51,7 +51,7 @@ std::string read_json_document(const std::string& fileName)
 
 void Config::Impl::ReadTests(const rapidjson::Document& doc)
 {
-    LOG("reading tests:");
+    // LOG("reading tests:");
     if (doc.HasMember("tests")) {
         const auto& testArray = doc["tests"];
         PARSE_BOOL_LINE(testArray, "squareOverlap", mBools["testImgProcSquareOverlap"]);
@@ -61,7 +61,7 @@ void Config::Impl::ReadTests(const rapidjson::Document& doc)
 
 void Config::Impl::ReadVisualizationOptions(const rapidjson::Document& doc)
 {
-    LOG("reading visualization options:");
+    // LOG("reading visualization options:");
     if (doc.HasMember("visualize")) {
         const auto& visualizationArray = doc["visualize"];
         PARSE_BOOL_LINE(visualizationArray, "squareFiltering", mBools["visualizeSquareFiltering"]);
@@ -72,7 +72,7 @@ void Config::Impl::ReadVisualizationOptions(const rapidjson::Document& doc)
 
 void Config::Impl::ReadImages(const rapidjson::Document& doc)
 {
-    LOG("reading images:");
+    // LOG("reading images:");
     if (doc.HasMember("images")) {
         const auto& imageArray = doc["images"].GetArray();
         for (const auto& entry : imageArray) {
@@ -94,13 +94,13 @@ void Config::Impl::ParseFile(std::string path)
     }
     const auto configFileContent = read_json_document(path);
     rapidjson::Document doc;
-    LOG("Parsing config file.");
+    // LOG("Parsing config file.");
     doc.Parse(configFileContent.c_str());
     ASSERT(doc.IsObject(), "invalid config file");
     ReadTests(doc);
     ReadVisualizationOptions(doc);
     ReadImages(doc);
-    LOG("Parsing finished.");
+    // LOG("Parsing finished.");
 }
 
 Config::Config()

@@ -211,8 +211,8 @@ void SimplexOptimizer::Impl::Optimize(
             }
         }
 
-        LOG("after iter " << iIter);
-        PrintSimplex(errorFunction);
+        // LOG("after iter " << iIter);
+        // PrintSimplex(errorFunction);
 
     }
 

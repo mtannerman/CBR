@@ -3,7 +3,5 @@
 
 namespace cbr
 {
-
-void run_simplex_optimizer_unittest();
-
+    bool run_simplex_optimizer_unittest();
 }

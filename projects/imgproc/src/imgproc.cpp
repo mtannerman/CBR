@@ -3,7 +3,6 @@
 #include "imgproc/find_square_contours.h"
 #include "imgproc/apply_corner_cluster_filtering.h"
 #include "imgproc/apply_size_filtering.h"
-#include "imgproc/test/square_ordering_test.h"
 #include "imgproc/order_squares.h"
 #include "imgproc/complete_missing_squares.h"
 

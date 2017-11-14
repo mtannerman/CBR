@@ -6,7 +6,6 @@
 #include "common/logging.h"
 #include "common/viz2d.h"
 #include "common/config.h"
-#include "imgproc/test/square_filtering_test.h"
 
 namespace cbr 
 {
@@ -176,10 +175,6 @@ std::vector<std::vector<cv::Point>> apply_cluster_filtering(
     const auto cornerClusters = find_corner_cluster_centers(squares);
     const auto uniqueSquares = 
         collect_unique_squares(squares, cornerClusters);
-
-    if (Config::GetInstance().GetBool("testImgProcSquareOverlap")) {
-        test::TEST_square_filtering_overlap(squares, uniqueSquares);
-    }
 
     return uniqueSquares;
 }

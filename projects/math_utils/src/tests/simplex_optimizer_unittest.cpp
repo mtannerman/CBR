@@ -13,9 +13,8 @@
 namespace cbr
 {
 
-void visualize_consecutive_simplexes()
+bool run_simplex_test_1(const bool visualize)
 {
-
     std::vector<std::vector<std::vector<double>>> simplexes;
     
     std::vector<std::vector<double>> initialSimplex(3, std::vector<double>(2));
@@ -38,32 +37,39 @@ void visualize_consecutive_simplexes()
         simplexes.push_back(optimizer.GetSimplex());
     }
 
-    const auto colors = CyclicContainer<cv::Scalar>::Construct(
-        std::vector<cv::Scalar>{viz::Color::red(), viz::Color::green(), viz::Color::blue()}
-    );
+    if (visualize) {
+        const auto colors = CyclicContainer<cv::Scalar>::Construct(
+            std::vector<cv::Scalar>{viz::Color::red(), viz::Color::green(), viz::Color::blue()}
+        );
 
-    const double dilationFactor = 100.0;
-    int i = 0;
-    for (const auto& simplex : simplexes) {
-        const std::string imageName = STR(__FUNCTION__ << "dbg" << i++);
-        viz::Visualizer2D vizWindow(imageName);
-        const auto color = colors.Get();
-        for (size_t iNode = 0; iNode < simplex.size(); ++iNode) {
-            const auto prevPoint = cv::Point(dilationFactor * cv::Point2d(simplex[iNode][0], simplex[iNode][1]));
-            const auto nextNodeIdx = ((iNode + 1) == simplex.size() ? 0 : (iNode + 1));
-            const auto currPoint = cv::Point(dilationFactor * cv::Point2d(simplex[nextNodeIdx][0], simplex[nextNodeIdx][1]));
-            vizWindow.AddLine(prevPoint, currPoint, color);
+        const double dilationFactor = 100.0;
+        int i = 0;
+        for (const auto& simplex : simplexes) {
+            const std::string imageName = STR(__FUNCTION__ << "dbg" << i++);
+            viz::Visualizer2D vizWindow(imageName);
+            const auto color = colors.Get();
+            for (size_t iNode = 0; iNode < simplex.size(); ++iNode) {
+                const auto prevPoint = cv::Point(dilationFactor * cv::Point2d(simplex[iNode][0], simplex[iNode][1]));
+                const auto nextNodeIdx = ((iNode + 1) == simplex.size() ? 0 : (iNode + 1));
+                const auto currPoint = cv::Point(dilationFactor * cv::Point2d(simplex[nextNodeIdx][0], simplex[nextNodeIdx][1]));
+                vizWindow.AddLine(prevPoint, currPoint, color);
+            }
+
+            vizWindow.AddArrow(cv::Point(-200, 0), cv::Point(200, 0), viz::Color::white());
+            vizWindow.AddArrow(cv::Point(0, -200), cv::Point(0, 200), viz::Color::white());
+
+            cv::namedWindow(imageName, cv::WINDOW_AUTOSIZE);
+            const auto image = vizWindow.CreateImage();
+            cv::imshow(imageName, image);
         }
 
-        vizWindow.AddArrow(cv::Point(-200, 0), cv::Point(200, 0), viz::Color::white());
-        vizWindow.AddArrow(cv::Point(0, -200), cv::Point(0, 200), viz::Color::white());
-
-        cv::namedWindow(imageName, cv::WINDOW_AUTOSIZE);
-        const auto image = vizWindow.CreateImage();
-        cv::imshow(imageName, image);
+        cv::waitKey();
     }
-    
-    cv::waitKey();
+
+    const auto result = cv::Point2d(optimizer.GetSimplex()[0][0], optimizer.GetSimplex()[0][1]);
+    const auto analyticResult = cv::Point2d(2., 0.);
+
+    return cv::norm(result - analyticResult) < 0.05;
 }
 
 void run_one_optimization_session()
@@ -87,10 +93,11 @@ void run_one_optimization_session()
     });
 }
 
-void run_simplex_optimizer_unittest()
+bool run_simplex_optimizer_unittest()
 {
-    visualize_consecutive_simplexes();
+    run_simplex_test_1(false);
     // run_one_optimization_session();
+    return true;
 }
 
 }
