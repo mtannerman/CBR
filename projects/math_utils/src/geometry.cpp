@@ -6,6 +6,34 @@
 
 namespace cbr {
 
+double arc_tangent(const double cosine, const double sine)
+{
+    constexpr double pi = 3.14159265;
+
+    if (cosine == 0.) {
+        if (sine > 0.) {
+            return pi / 2.;
+        }
+        return -pi / 2.;
+    }
+
+    if (sine >= 0.0) {
+        if (cosine >= 0.0) {
+            return std::atan(sine / cosine);
+        }
+        return pi - std::atan(-sine / cosine);
+    }
+    else {
+        if (cosine >= 0.0) {
+            return 2*pi - std::atan(-sine / cosine);
+        }
+        return pi + std::atan(sine / cosine);
+    }
+
+    ASSERT(false, "should not reach this");
+    return 0.;
+}
+
 cv::Matx33f create_coefficient_matrix(
     const std::array<cv::Point2f, 3>& triangle)
 {
@@ -94,7 +122,7 @@ double compute_rotation_angle(const cv::Point& start, const cv::Point& dest)
     const double sine = -s.y * d.x + s.x * d.y;
     const double cosine = s.x * d.x + s.y * d.y;
 
-    return std::atan2(sine, cosine);
+    return arc_tangent(cosine, sine);
 }
 
 }

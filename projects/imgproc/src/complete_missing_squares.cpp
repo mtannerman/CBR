@@ -79,6 +79,7 @@ std::array<cv::Point2d, 2> choose_two_dominant_edge_cluster_centers(
 
     const auto rightMost = vec2Point2d(*rightMostIt);
 
+    LOG(DESC(rightMost));
     edgeClusterCenters.erase(rightMostIt);
 
     for (const auto& v : edgeClusterCenters) {
