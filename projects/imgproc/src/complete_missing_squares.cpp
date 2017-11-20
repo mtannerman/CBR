@@ -81,11 +81,17 @@ std::array<cv::Point2d, 2> choose_two_dominant_edge_cluster_centers(
 
     edgeClusterCenters.erase(rightMostIt);
 
-    const auto mostVerticalIt = std::min_element(edgeClusterCenters.begin(), edgeClusterCenters.end(),
-        [rightMost](const std::vector<double>& v1, const std::vector<double>& v2)
-        { return compute_rotation_angle(rightMost, vec2Point2d(v1)) < compute_rotation_angle(rightMost, vec2Point2d(v2)); });
+    for (const auto& v : edgeClusterCenters) {
+        LOG(vec2Point2d(v) << ": " << compute_rotation_angle(rightMost, vec2Point2d(v)));
+    }
 
-    return std::array<cv::Point2d, 2>{rightMost, vec2Point2d(*mostVerticalIt)};
+    const auto mostVertical = vec2Point2d(*std::min_element(edgeClusterCenters.begin(), edgeClusterCenters.end(),
+        [rightMost](const std::vector<double>& v1, const std::vector<double>& v2)
+        { return compute_rotation_angle(rightMost, vec2Point2d(v1)) < compute_rotation_angle(rightMost, vec2Point2d(v2)); }));
+
+    return std::array<cv::Point2d, 2>{
+        rightMost/* / cv::norm(rightMost)*/, 
+        mostVertical/* / cv::norm(mostVertical)*/};
 
 }
 

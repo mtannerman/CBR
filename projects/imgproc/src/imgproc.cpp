@@ -20,7 +20,6 @@ void find_board(const cv::Mat& image)
 	for (const auto d : dominantEdgeDirections) {
 		LOG(d);
 	}
-	// run_square_ordering_test(filteredSquares);
 }
 
 }
