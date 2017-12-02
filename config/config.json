@@ -5,11 +5,12 @@
     ],
     "tests":
     {
-        "simplexOptimizer": true
+        "simplexOptimizer": false
     },
     "visualize":
     {
         "squareFiltering": false,
-        "dominantEdgeDirections": true
+        "dominantEdgeDirections": false,
+        "rotatedImage": true
     }
 }

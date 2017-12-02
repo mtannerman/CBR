@@ -5,6 +5,6 @@
 
 namespace cbr
 {
-void find_board(const cv::Mat& image);
+cv::Mat preprocess_image(const cv::Mat& image);
 }
 

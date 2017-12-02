@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	const auto images = ::cbr::Config::GetInstance().GetStringList("images");
 	const std::string fileName = images[0];
 	auto image = cbr::read_image(fileName);
-	cbr::find_board(image);
+	cbr::preprocess_image(image);
 
 	LOG("Finished successfully");
 
