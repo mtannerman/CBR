@@ -91,8 +91,8 @@ std::array<cv::Point2d, 2> choose_two_dominant_edge_cluster_centers(
         { return compute_rotation_angle(rightMost, vec2Point2d(v1)) < compute_rotation_angle(rightMost, vec2Point2d(v2)); }));
 
     return std::array<cv::Point2d, 2>{
-        rightMost/* / cv::norm(rightMost)*/, 
-        mostVertical/* / cv::norm(mostVertical)*/};
+        rightMost / cv::norm(rightMost), 
+        mostVertical / cv::norm(mostVertical)};
 
 }
 
