@@ -60,10 +60,10 @@ struct EdgeAngleFitter
 };
 
 void set_edge_vector(std::vector<double>& edgeVec, 
-    const cv::Point& p1, 
-    const cv::Point& p2)
+    const cv::Point2d& p1, 
+    const cv::Point2d& p2)
 {
-    auto diffVec = cv::Point2d(p2 - p1);
+    auto diffVec = p2 - p1;
 
     edgeVec[0] = diffVec.x;
     edgeVec[1] = diffVec.y;
@@ -97,7 +97,7 @@ std::array<cv::Point2d, 2> choose_two_dominant_edge_cluster_centers(
 }
 
 std::array<cv::Point2d, 2> find_dominant_edgedirections(
-    const std::vector<std::vector<cv::Point>>& squares)
+    const std::vector<Square>& squares)
 {
     const size_t numberOfEdges = squares.size() * 4;
     std::vector<std::vector<double>> edges(numberOfEdges, std::vector<double>(2, 0.0));
@@ -202,17 +202,17 @@ void insert_to_band_matches(
     }
 }
 
-std::vector<std::vector<cv::Point>> complete_missing_squares(
-    const std::vector<std::vector<cv::Point>>& squares)
+std::vector<Square> complete_missing_squares(
+    const std::vector<Square>& squares)
 {
-    std::vector<std::vector<cv::Point>> fullBoard;
+    std::vector<Square> fullBoard;
     const auto dominantEdgeDirections = find_dominant_edgedirections(squares);
     const auto& f1 = dominantEdgeDirections[0];
 	const auto& f2 = dominantEdgeDirections[1];
 
-    const auto rotate = [&f1, &f2](const cv::Point& p){ return cv::Point2d(f1.x * p.x + f1.y * p.y, f2.x * p.x + f2.y * p.y); };
+    const auto rotate = [&f1, &f2](const cv::Point2d& p){ return f1.x * p.x + f1.y * p.y, f2.x * p.x + f2.y * p.y; };
 
-    auto rotatedSquares = std::vector<std::vector<cv::Point2d>>(squares.size(), std::vector<cv::Point2d>(4, cv::Point2d(0., 0.)));
+    auto rotatedSquares = std::vector<Square>(squares.size(), Square());
     for (size_t iSquare = 0; iSquare < squares.size(); ++iSquare) {
         for (size_t iCorner = 0; iCorner < 4; ++iCorner) {
             rotatedSquares[iSquare][iCorner] = rotate(squares[iSquare][iCorner]);

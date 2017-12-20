@@ -13,29 +13,29 @@ namespace cbr
 struct CornerCluster
 {
     CornerCluster() = default;
-    CornerCluster(const cv::Point& corner)
-        : mean(cv::Point2f(corner))
+    CornerCluster(const cv::Point2d& corner)
+        : mean(corner)
     {}
     
-    void Update(const cv::Point& newPoint)
+    void Update(const cv::Point2d& newPoint)
     {
-        mean = (mean * float(numberOfElementsInCluster) + cv::Point2f(newPoint)) / float(numberOfElementsInCluster + 1);
+        mean = (mean * double(numberOfElementsInCluster) + newPoint) / double(numberOfElementsInCluster + 1);
         numberOfElementsInCluster++;
     }
 
-    double Distance(const cv::Point& corner) const
+    double Distance(const cv::Point2d& corner) const
     {
-        return cv::norm(cv::Point2f(corner) - mean);
+        return cv::norm(corner - mean);
     }
 
-    cv::Point2f mean;
+    cv::Point2d mean;
     int numberOfElementsInCluster = 1;
 };
 
 std::pair<size_t, double> find_closest_cluster(
-    const std::vector<cv::Point>& corners, 
+    const std::vector<cv::Point2d>& corners, 
     const std::vector<CornerCluster>& clusters,
-    const cv::Point& corner)
+    const cv::Point2d& corner)
 {
     double minimalDistance = std::numeric_limits<double>::max();
     size_t closestClusterLabel = 0;
@@ -52,27 +52,25 @@ std::pair<size_t, double> find_closest_cluster(
 
 }
 
-std::vector<cv::Point> squares_to_corners(const std::vector<std::vector<cv::Point>>& squares)
+std::vector<cv::Point2d> squares_to_corners(const std::vector<Square>& squares)
 {
-    std::vector<cv::Point> corners;
-    corners.reserve(squares.size() *4);
+    std::vector<cv::Point2d> corners;
+    corners.reserve(squares.size() * 4);
     for (const auto& square : squares) {
-        corners.insert(corners.end(), square.begin(), square.end());
+        corners.insert(corners.end(), square.corners.begin(), square.corners.end());
     }
 
     return corners;
 }
 
-double compute_square_edge_length_average(const std::vector<std::vector<cv::Point>>& squares)
+double compute_square_edge_length_average(const std::vector<Square>& squares)
 {
-    const double edgeLengthSum = fsum(squares, [](const std::vector<cv::Point>& s) 
-    { return cv::norm(s[0] - s[1]) + cv::norm(s[1] - s[2]) + cv::norm(s[2] - s[3]) + cv::norm(s[3] - s[0]);});
-
+    const double edgeLengthSum = fsum(squares, [](const Square& s) { return s.Circumference(); });
     return edgeLengthSum / double(squares.size()) / 4.0;
 }
 
-std::vector<cv::Point2f> find_corner_cluster_centers(
-    const std::vector<std::vector<cv::Point>>& squares)
+std::vector<cv::Point2d> find_corner_cluster_centers(
+    const std::vector<Square>& squares)
 {
     const auto corners = squares_to_corners(squares);
     const double squareEdgeLengthAverage = compute_square_edge_length_average(squares);
@@ -97,7 +95,7 @@ std::vector<cv::Point2f> find_corner_cluster_centers(
         }
     }
 
-    std::vector<cv::Point2f> clusterCenters;
+    std::vector<cv::Point2d> clusterCenters;
     clusterCenters.reserve(cornerClusters.size());
     for (const auto& cornerCluster : cornerClusters) {
         clusterCenters.push_back(cornerCluster.mean);
@@ -107,7 +105,7 @@ std::vector<cv::Point2f> find_corner_cluster_centers(
         viz::Visualizer2D vizWindow("squareFiltering");
 
         for (const auto& c : cornerClusters) {
-            vizWindow.AddCircle(c.mean, 5, cv::Scalar(255, 0, 0));
+            vizWindow.AddCircle(cv::Point(c.mean), 5, cv::Scalar(255, 0, 0));
         }
 
         vizWindow.Spin();
@@ -117,49 +115,43 @@ std::vector<cv::Point2f> find_corner_cluster_centers(
     return clusterCenters;
 }
 
-cv::Point2f compute_square_center(const std::vector<cv::Point>& square) 
+cv::Point2d find_closest_cluster(
+    const std::vector<cv::Point2d>& cornerClusterCenters,
+     const cv::Point2d& corner)
 {
-    return cv::Point2f(fsum(square)) / 4.0f;
-}
-
-cv::Point find_closest_cluster(
-    const std::vector<cv::Point2f>& cornerClusterCenters,
-     const cv::Point& corner)
-{
-    const auto fpCorner = cv::Point2f(corner);
-    const auto compareLambda = [=](const cv::Point2f& lhs, const cv::Point2f& rhs)
-        { return cv::norm(lhs - fpCorner) < cv::norm(rhs - fpCorner); };
     const auto closestClusterCenter = 
-        std::min_element(cornerClusterCenters.begin(), cornerClusterCenters.end(), compareLambda);
+        std::min_element(cornerClusterCenters.begin(), cornerClusterCenters.end(), 
+        [=](const cv::Point2d& lhs, const cv::Point2d& rhs) { 
+            return cv::norm(lhs - corner) < cv::norm(rhs - corner); });
 
-    return cv::Point(*closestClusterCenter);
+    return *closestClusterCenter;
 }
 
 void adjust_square_corners_to_closest_cluster(
-    const std::vector<cv::Point2f>& cornerClusterCenters,
-    std::vector<cv::Point>& square) 
+    const std::vector<cv::Point2d>& cornerClusterCenters,
+    Square& square)
 {
-    for (auto& corner : square) {
+    for (auto& corner : square.corners) {
         corner = find_closest_cluster(cornerClusterCenters, corner);
     }
 }
 
 bool square_center_already_taken(
-    const cv::Point2f& center,
-     std::vector<cv::Point2f>& squareCenters)
+    const cv::Point2d& center,
+     std::vector<cv::Point2d>& squareCenters)
 {
     return std::find(squareCenters.begin(), squareCenters.end(), center) != squareCenters.end();
 }
 
-std::vector<std::vector<cv::Point>> collect_unique_squares(
-    const std::vector<std::vector<cv::Point>>& squares,
-     const std::vector<cv::Point2f>& cornerClusterCenters)
+std::vector<Square> collect_unique_squares(
+    const std::vector<Square>& squares,
+     const std::vector<cv::Point2d>& cornerClusterCenters)
 {
-    std::vector<std::vector<cv::Point>> uniqueSquares;
-    std::vector<cv::Point2f> squareCenters;
+    std::vector<Square> uniqueSquares;
+    std::vector<cv::Point2d> squareCenters;
     for (auto square : squares) {
         adjust_square_corners_to_closest_cluster(cornerClusterCenters, square);
-        const auto adjustedCenter = compute_square_center(square);
+        const auto adjustedCenter = square.middle;
         if (!square_center_already_taken(adjustedCenter, squareCenters)) {
             uniqueSquares.push_back(square);
             squareCenters.push_back(adjustedCenter);
@@ -169,8 +161,8 @@ std::vector<std::vector<cv::Point>> collect_unique_squares(
     return uniqueSquares;
 }
 
-std::vector<std::vector<cv::Point>> apply_cluster_filtering(
-    const std::vector<std::vector<cv::Point>>& squares)
+std::vector<Square> apply_cluster_filtering(
+    const std::vector<Square>& squares)
 {
     const auto cornerClusters = find_corner_cluster_centers(squares);
     const auto uniqueSquares = 

@@ -1,9 +1,7 @@
-#include "imgproc/find_square_contours.h"
-#include "common/logging.h"
+#include "imgproc/find_raw_squares.h"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/calib3d.hpp"
-#include "imgproc/apply_size_filtering.h"
 
 namespace cbr
 {
@@ -23,9 +21,9 @@ double angle(const cv::Point& pt1,
     return numerator / denominator;
 }
 
-std::vector<std::vector<cv::Point>> find_squares(const cv::Mat& image)
+std::vector<Square> find_squares(const cv::Mat& image)
 {
-    std::vector<std::vector<cv::Point>> squares;
+    std::vector<Square> squares;
 	cv::Mat pyr, timg, gray0(image.size(), CV_8U), gray;
 	cv::pyrDown(image, pyr, cv::Size(image.cols/2, image.rows/2));
 	cv::pyrUp(pyr, timg, image.size());
@@ -69,13 +67,12 @@ std::vector<std::vector<cv::Point>> find_squares(const cv::Mat& image)
                     }
 
                     if ( maxCosine < 0.3 ) {
-                        squares.push_back(approx);
+                        squares.push_back(Square(approx));
                     }
                 }
             }
         }
     }
-    squares = apply_size_filtering(squares, image.size());
     return squares;
 }
 

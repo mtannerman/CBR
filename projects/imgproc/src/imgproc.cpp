@@ -1,7 +1,7 @@
 #include "imgproc/imgproc.h"
 #include "common/logging.h"
 #include "common/config.h"
-#include "imgproc/find_square_contours.h"
+#include "imgproc/find_raw_squares.h"
 #include "imgproc/apply_corner_cluster_filtering.h"
 #include "imgproc/apply_size_filtering.h"
 #include "imgproc/order_squares.h"
@@ -40,8 +40,8 @@ cv::Mat preprocess_image(const cv::Mat& image)
 	if (Config::GetInstance().GetBool("visualizeRotatedImage")) {
         for (const auto& square : filteredSquares) {
           for (int i = 0; i < 4; ++i) {
-            const auto point = rotate(square[i]);
-            const auto nextPoint = rotate(square[i < 3 ? (i + 1) : 0]);
+            const auto point = rotate(square.corners[i]);
+            const auto nextPoint = rotate(square.corners[i < 3 ? (i + 1) : 0]);
             cv::line(rotatedImage, point, nextPoint, cv::Scalar(255., 0., 0.), 2);
           }
         }

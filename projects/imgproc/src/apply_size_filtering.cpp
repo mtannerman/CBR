@@ -7,13 +7,11 @@
 namespace cbr
 {
 
-double approximate_square_area(const std::vector<cv::Point>& square)
+double approximate_square_area(const Square& square)
 {
-    const auto center = cv::Point2f(fsum(square)) / 4.0f;
     double maxDiagonalLength = -1.0;
-    for (const auto& corner : square) {
-        const auto fpCorner = cv::Point2f(corner);
-        const double diagonalLength = cv::norm(center - fpCorner);
+    for (const auto& corner : square.corners) {
+        const double diagonalLength = cv::norm(square.middle - corner);
         maxDiagonalLength = std::max(maxDiagonalLength, diagonalLength);
     }
 
@@ -21,33 +19,33 @@ double approximate_square_area(const std::vector<cv::Point>& square)
 }
 
 bool is_square_too_large_compared_to_image(
-    const std::vector<cv::Point>& square,
-    const cv::Size& imageSize)
+    const Square& square,
+    const double imageArea)
 {
-    const auto imageArea = double(imageSize.width * imageSize.height);
+    
     const auto approximateSquareArea = approximate_square_area(square);
     return approximateSquareArea > (imageArea / 10.0);
 }
 
 double compute_average_square_area(
-    const std::vector<std::vector<cv::Point>>& squares)
+    const std::vector<Square>& squares)
 {
-    const auto squareAreaSum = fsum(squares, [=](const std::vector<cv::Point>& square){ return approximate_square_area(square); });
+    const auto squareAreaSum = fsum(squares, [=](const Square& square){ return approximate_square_area(square); });
     return squareAreaSum / double(squares.size());
 }
 
 std::pair<double, double> compute_square_area_bounds(
-    const std::vector<std::vector<cv::Point>>& squares)
+    const std::vector<Square>& squares)
 {
     // ?? is lambda needed?
-    const auto squareAreaSum = fsum(squares, [=](const std::vector<cv::Point>& square){ return approximate_square_area(square); });
+    const auto squareAreaSum = fsum(squares, [=](const Square& square){ return approximate_square_area(square); });
     const auto averageSquareArea = squareAreaSum / double(squares.size());
     return {averageSquareArea / 4.0, 4.0 * averageSquareArea};
 }
 
 
 bool is_square_area_difference_too_large(
-    const std::vector<cv::Point>& square, 
+    const Square& square, 
     const std::pair<double, double>& squareAreaBounds)
 {
     const auto squareArea = approximate_square_area(square);
@@ -55,14 +53,14 @@ bool is_square_area_difference_too_large(
            (squareArea < squareAreaBounds.first);
 }
 
-std::vector<std::vector<cv::Point>> apply_size_filtering(
-    const std::vector<std::vector<cv::Point>>& squares,
+std::vector<Square> apply_size_filtering(
+    const std::vector<Square>& squares,
     const cv::Size& imageSize)
 {
     auto filteredSquares = squares;
-
+    const double imageArea = double(imageSize.width * imageSize.height);
     for (auto it = filteredSquares.begin(); it != filteredSquares.end();) {
-        if (is_square_too_large_compared_to_image(*it, imageSize)) {
+        if (is_square_too_large_compared_to_image(*it, imageArea)) {
             it = filteredSquares.erase(it);
         }
         else {
