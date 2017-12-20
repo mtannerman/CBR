@@ -231,27 +231,87 @@ std::vector<std::vector<cv::Point>> complete_missing_squares(
         }
     }
 
+    std::array<std::vector<std::pair<cv::Point2d, cv::Point2d>>, 2> middleLines;
+    for (const auto bandDirection : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
+        for (const auto& matches : bandMatches[int(bandDirection)]) {
+            size_t minEdgeIndex, maxEdgeIndex; 
+            switch(bandDirection) {
+                case BandDirection::HORIZONTAL:
+                    minEdgeIndex = *std::min_element(matches.begin(), matches.end(), [&rotatedSquares](const size_t i1, const size_t i2) { return fsum(rotatedSquares[i1]).x < fsum(rotatedSquares[i2]).x; });
+                    maxEdgeIndex = *std::max_element(matches.begin(), matches.end(), [&rotatedSquares](const size_t i1, const size_t i2) { return fsum(rotatedSquares[i1]).x < fsum(rotatedSquares[i2]).x; });
+                break;
+                case BandDirection::VERTICAL:
+                    minEdgeIndex = *std::min_element(matches.begin(), matches.end(), [&rotatedSquares](const size_t i1, const size_t i2) { return fsum(rotatedSquares[i1]).y < fsum(rotatedSquares[i2]).y; });
+                    maxEdgeIndex = *std::max_element(matches.begin(), matches.end(), [&rotatedSquares](const size_t i1, const size_t i2) { return fsum(rotatedSquares[i1]).y < fsum(rotatedSquares[i2]).y; });
+                break;
+            }
+            middleLines[int(bandDirection)].push_back({fsum(rotatedSquares[minEdgeIndex]) / 4., fsum(rotatedSquares[maxEdgeIndex]) / 4.});
+        }
+    }
+
+    std::vector<cv::Point2d> newMiddlePoints;
+    const cv::Point2d approximateBoardMiddle = fsum(rotatedSquares, [](const auto& squareVec){ return fsum(squareVec); }) / 4. / double(rotatedSquares.size());
+    const double averageEdgeLength = fsum(rotatedSquares, [](const auto& s){ return cv::norm(s[0] - s[1]) + cv::norm(s[1] - s[2]); }) / 2. / double(rotatedSquares.size());
+    const double maxDistance = 10.0 * averageEdgeLength;
+    for (const auto& hLineEnds : middleLines[int(BandDirection::HORIZONTAL)]) {
+        const auto hLine = Line2d<double>::FromTwoPointsOnLine(hLineEnds.first, hLineEnds.second);
+        for (const auto& vLineEnds : middleLines[int(BandDirection::VERTICAL)]) {
+            const auto vLine = Line2d<double>::FromTwoPointsOnLine(vLineEnds.first, vLineEnds.second);
+            const auto intersection = hLine.Intersection(vLine);
+            // const std::string imageName = STR(CBR_FANCY_FUNCTION << "dbg");
+            // viz::Visualizer2D vizWindow(imageName);
+            // for (const auto& s : rotatedSquares) {
+            //     vizWindow.AddCircle(cv::Point(fsum(s)) / 4, 4, viz::Color::red());
+            //     for (const auto& c : s) {
+            //         vizWindow.AddCircle(cv::Point(c), 3, viz::Color::blue());
+            //     }
+            //     for (size_t i = 0; i < 4; ++i) {
+            //         vizWindow.AddLine(cv::Point(s[i]), cv::Point(s[(i + 1) % 4]), viz::Color::blue());
+            //     }
+            // }
+            // vizWindow.AddLine(cv::Point(hLine.At(-1.)), cv::Point(hLine.At(1.)), viz::Color::blue(), 4);
+            // vizWindow.AddLine(cv::Point(vLine.At(-1.)), cv::Point(vLine.At(1.)), viz::Color::yellow(), 4);
+
+            if (cv::norm(intersection - approximateBoardMiddle) < maxDistance) {
+                newMiddlePoints.push_back(intersection);
+                // vizWindow.AddCircle(cv::Point(intersection), 2, viz::Color::magenta());
+                // vizWindow.AddCircle(cv::Point(intersection), 4, viz::Color::magenta());
+                // vizWindow.AddCircle(cv::Point(intersection), 6, viz::Color::magenta());
+                // vizWindow.AddCircle(cv::Point(intersection), 8, viz::Color::magenta());
+            }
+            
+            // vizWindow.Spin();
+        }
+    }
+
     if (Config::GetInstance().GetBool("visualizeBandMatches")) {
         const std::string imageName = STR(CBR_FANCY_FUNCTION << "dbg");
         viz::Visualizer2D vizWindow(imageName);
         for (const auto& s : rotatedSquares) {
+            vizWindow.AddCircle(cv::Point(fsum(s)) / 4, 4, viz::Color::red());
             for (const auto& c : s) {
-                vizWindow.AddCircle(cv::Point(c), 2, viz::Color::red());
+                vizWindow.AddCircle(cv::Point(c), 3, viz::Color::blue());
+            }
+            for (size_t i = 0; i < 4; ++i) {
+                vizWindow.AddLine(cv::Point(s[i]), cv::Point(s[(i + 1) % 4]), viz::Color::blue());
             }
         }
-        const auto colors = std::vector<cv::Scalar>{viz::Color::blue(), viz::Color::yellow(), viz::Color::red(), viz::Color::green()};
-        int colorIndex = 0;
+        const auto colors = std::vector<cv::Scalar>{viz::Color::blue(), viz::Color::yellow()};
         for (const auto bandDir : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
-            for (const auto& g : bandMatches[int(bandDir)]) {
-                ASSERT(!g.empty(), "");
-                for (auto it = g.begin(); std::next(it) != g.end(); ++it) {
-                    vizWindow.AddLine(fsum(rotatedSquares[*it]) / 4, fsum(rotatedSquares[*std::next(it)]) / 4, colors[colorIndex % 4]);
-                }
-                ++colorIndex;
+            for (const auto& line : middleLines[int(bandDir)]) {
+                vizWindow.AddLine(line.first, line.second, colors[int(bandDir)]);
             }
         }
-        vizWindow.Spin();
+
+        for (const auto& p : newMiddlePoints) {
+            vizWindow.AddCircle(cv::Point(p), 8, viz::Color::green());
+        }
+
+        vizWindow.Spin();    
     }
+
+
+
 
     return fullBoard;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "opencv2/core.hpp"
+#include "common/logging.h"
 
 namespace cbr
 {
@@ -56,6 +57,18 @@ struct Line2d
     {
         const double tMin = ClosestTimeArg(otherPoint);
         return cv::norm(cv::Point2d(otherPoint) - cv::Point2d(P) - cv::Point2d(v) * tMin);
+    }
+
+    cv::Point2d Intersection(const Line2d& other) const
+    {
+        const auto det = v.x * other.v.y - v.y * other.v.x;
+        // LOG("--=-==-=-=-=-=-");
+        // LOG(DESC(det));
+        if (std::abs(det) < 1e-7) return cv::Point2d(1e50, 1e50);
+
+        const auto timeArg = (other.v.y * (other.P.x - P.x) - other.v.x * (other.P.y - P.y)) / det;
+        // LOG(DESC(timeArg));
+        return At(timeArg);
     }
 
     PointT P;

@@ -11,7 +11,7 @@
     {
         "squareFiltering": false,
         "dominantEdgeDirections": false,
-        "rotatedImage": true,
+        "rotatedImage": false,
         "bandMatches": true
     }
 }
