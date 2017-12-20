@@ -8,7 +8,7 @@
 namespace cbr
 {
 
-constexpr int thresh = 200, N = 1;
+constexpr int thresh = 200, N = 10;
 
 double angle(const cv::Point& pt1, 
     const cv::Point& pt2, 

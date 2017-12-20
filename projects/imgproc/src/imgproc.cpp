@@ -10,6 +10,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <limits>
 #include "common/exceptions.h"
+#include "imgproc/find_edge_squares.h"
 
 namespace cbr
 {
@@ -35,21 +36,32 @@ cv::Mat preprocess_image(const cv::Mat& image)
 	cv::Mat rotatedImage;
 	cv::warpAffine(image, rotatedImage, rotMx, size, cv::INTER_LINEAR, cv::BORDER_CONSTANT);
 
-
+	const auto edgeSquares = find_edge_squares(dominantEdgeDirections, filteredSquares);
 	if (Config::GetInstance().GetBool("visualizeRotatedImage")) {
         for (const auto& square : filteredSquares) {
           for (int i = 0; i < 4; ++i) {
             const auto point = rotate(square[i]);
             const auto nextPoint = rotate(square[i < 3 ? (i + 1) : 0]);
-            cv::line(rotatedImage, point, nextPoint, cv::Scalar(255., 0., 0.), 4);
+            cv::line(rotatedImage, point, nextPoint, cv::Scalar(255., 0., 0.), 2);
           }
         }
+		for (const auto& e : edgeSquares) {
+			const auto& square = e.second.front();
+			for (int i = 0; i < 4; ++i) {
+            	const auto point = square[i];
+            	const auto nextPoint = square[i < 3 ? (i + 1) : 0];
+				const auto defaultAngle = std::acos((nextPoint - point).x / cv::norm(nextPoint - point));
+				const auto angle = std::min(defaultAngle, CV_PI - defaultAngle) * 180.0 / CV_PI;
+            	cv::line(rotatedImage, point, nextPoint, cv::Scalar(0., 0., 255.), 4);
+				cv::putText(rotatedImage, STR(int(angle)), cv::Point(nextPoint + point) / 2, 1, 1, cv::Scalar(255., 0., 0.), 2);
+          	}
+		}
         cv::namedWindow("rotimg", 1);
         cv::imshow("rotimg", rotatedImage);
         cv::waitKey();
     }
 
-
+	complete_missing_squares(filteredSquares);
 	
 
 	return rotatedImage;

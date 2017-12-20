@@ -1,80 +1,43 @@
 #include "imgproc/find_edge_squares.h"
 #include "math_utils/functional.h"
 
+/// OBSOLETE!!!!!!!!!!!!!!
+/// OBSOLETE!!!!!!!!!!!!!!
+/// OBSOLETE!!!!!!!!!!!!!!
+/// OBSOLETE!!!!!!!!!!!!!!
+
 namespace cbr
 {
 
-cv::Point2d find_extremal_corner(
+std::vector<cv::Point2d> find_extremal_square(
     const Edge edge,
     const std::vector<std::vector<cv::Point2d>>& rotatedSquares)
-{  
-    // switch (edge) {
-    //     case Edge::LEFT:
-    //         for (const auto& s : rotatedSquares) {
+{
+    static const std::map<Edge, std::function<double(cv::Point2d)>> extremalityFunctions {
+        {Edge::LEFT,   [](const cv::Point2d& p){ return -p.x; }},
+        {Edge::TOP,    [](const cv::Point2d& p){ return +p.y; }},
+        {Edge::RIGHT,  [](const cv::Point2d& p){ return +p.x; }},
+        {Edge::BOTTOM, [](const cv::Point2d& p){ return -p.y; }},
+    };
 
-    //         } 
-    //     case Edge::TOP:
-    //     case Edge::RIGHT:
-    //     case Edge::BOTTOM:
-    // }
+    const auto extremality = extremalityFunctions.at(edge);
+    const auto squareExtremality = [extremality](const std::vector<cv::Point2d>& square) {
+        return extremality(*std::max_element(square.begin(), square.end(), 
+        [extremality](const cv::Point2d& p1, const cv::Point2d& p2){
+            return extremality(p1) < extremality(p2);
+        }));
+    };
 
-    auto ret = rotatedSquares[0][0];
-    if (edge == Edge::LEFT) {
-        auto minimalXCoord = ret.x;
-        for (const auto& s : rotatedSquares) {
-            for (const auto& c : s) {
-                if (c.x < minimalXCoord) {
-                    ret = c; 
-                    minimalXCoord = c.x;
-                }
-            }
-        }
-    }
-    else if (edge == Edge::TOP) {
-        auto maximalYCoord = ret.y;
-        for (const auto& s : rotatedSquares) {
-            for (const auto& c : s) {
-                if (c.y > maximalYCoord) {
-                    ret = c; 
-                    maximalYCoord = c.y;
-                }
-            }
-        }
-    }
-    else if (edge == Edge::RIGHT) {
-        auto maximalXCoord = ret.x;
-        for (const auto& s : rotatedSquares) {
-            for (const auto& c : s) {
-                if (c.x > maximalXCoord) {
-                    ret = c; 
-                    maximalXCoord = c.x;
-                }
-            }
-        }
-    }
-    else { // BOTTOM
-        auto minimalYCoord = ret.y;
-        for (const auto& s : rotatedSquares) {
-            for (const auto& c : s) {
-                if (c.y < minimalYCoord) {
-                    ret = c; 
-                    minimalYCoord = c.y;
-                }
-            }
-        }
-    }
-
-    return ret;
+    return *std::max_element(rotatedSquares.begin(), rotatedSquares.end(), 
+        [squareExtremality](const std::vector<cv::Point2d>& s1, const std::vector<cv::Point2d>& s2) {
+            return squareExtremality(s1) < squareExtremality(s2);
+    });
 }
 
-std::map<Edge, std::vector<std::vector<cv::Point>>> find_edge_squares(
+std::map<Edge, std::vector<std::vector<cv::Point2d>>> find_edge_squares(
     const std::array<cv::Point2d, 2>& dominantEdgeDirections,
     const std::vector<std::vector<cv::Point>>& squares)
 {
-    std::map<Edge, std::vector<std::vector<cv::Point>>> ret;
-    const double edgeLengthAverage = fsum(squares, [](const std::vector<cv::Point>& s) {
-            return cv::norm(s[0] - s[1]) + cv::norm(s[1] - s[2]) + cv::norm(s[2] - s[3]) + cv::norm(s[3] - s[0]);
-        }) / 4. / double(squares.size());
 
     const auto& f1 = dominantEdgeDirections[0];
 	const auto& f2 = dominantEdgeDirections[1];
@@ -88,12 +51,16 @@ std::map<Edge, std::vector<std::vector<cv::Point>>> find_edge_squares(
         }
     }
 
-
-
+    std::map<Edge, std::vector<std::vector<cv::Point2d>>> ret;
     for (const auto edge : {Edge::LEFT, Edge::TOP, Edge::RIGHT, Edge::BOTTOM}) {
-
+        ret[edge].push_back(find_extremal_square(edge, rotatedSquares));
     }
-    return std::map<Edge, std::vector<std::vector<cv::Point>>>();
+
+    // const double edgeLengthAverage = fsum(rotatedSquares, [](const std::vector<cv::Point2d>& s) {
+    //         return cv::norm(s[0] - s[1]) + cv::norm(s[1] - s[2]) + cv::norm(s[2] - s[3]) + cv::norm(s[3] - s[0]);
+    //     }) / 4. / double(squares.size());
+
+    return ret;
 }
 
 }

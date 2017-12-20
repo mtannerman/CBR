@@ -67,6 +67,7 @@ void Config::Impl::ReadVisualizationOptions(const rapidjson::Document& doc)
         PARSE_BOOL_LINE(visualizationArray, "squareFiltering", mBools["visualizeSquareFiltering"]);
         PARSE_BOOL_LINE(visualizationArray, "dominantEdgeDirections", mBools["visualizeDominantEdgeDirections"]);
         PARSE_BOOL_LINE(visualizationArray, "rotatedImage", mBools["visualizeRotatedImage"]);
+        PARSE_BOOL_LINE(visualizationArray, "bandMatches", mBools["visualizeBandMatches"]);
     }
 }
 
