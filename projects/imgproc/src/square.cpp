@@ -5,6 +5,16 @@
 namespace cbr
 {
 
+cv::Point2d& Square::operator[](const size_t idx)
+{
+    return corners[idx];
+}
+
+const cv::Point2d& Square::operator[](const size_t idx) const
+{
+    return corners[idx];
+}
+
 Square::Square(const std::vector<cv::Point>& arg_corners)
 {
     ASSERT(arg_corners.size() == 4, "");
