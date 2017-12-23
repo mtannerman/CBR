@@ -2,7 +2,8 @@
 
 #include <opencv2/core.hpp>
 #include <vector>
-#include "imgproc/square.h"
+#include "math_utils/square.h"
+#include "math_utils/point.h"
 
 namespace cbr
 {

@@ -38,8 +38,8 @@ bool run_simplex_test_1(const bool visualize)
     }
 
     if (visualize) {
-        const auto colors = CyclicContainer<cv::Scalar>::Construct(
-            std::vector<cv::Scalar>{viz::Color::red(), viz::Color::green(), viz::Color::blue()}
+        const auto colors = CyclicContainer<viz::Color>::Construct(
+            std::vector<viz::Color>{viz::Color::red(), viz::Color::green(), viz::Color::blue()}
         );
 
         const double dilationFactor = 100.0;
@@ -49,14 +49,14 @@ bool run_simplex_test_1(const bool visualize)
             viz::Visualizer2D vizWindow(imageName);
             const auto color = colors.Get();
             for (size_t iNode = 0; iNode < simplex.size(); ++iNode) {
-                const auto prevPoint = cv::Point(dilationFactor * cv::Point2d(simplex[iNode][0], simplex[iNode][1]));
+                const auto prevPoint = dilationFactor * cv::Point2d(simplex[iNode][0], simplex[iNode][1]);
                 const auto nextNodeIdx = ((iNode + 1) == simplex.size() ? 0 : (iNode + 1));
-                const auto currPoint = cv::Point(dilationFactor * cv::Point2d(simplex[nextNodeIdx][0], simplex[nextNodeIdx][1]));
-                vizWindow.AddLine(prevPoint, currPoint, color);
+                const auto currPoint = dilationFactor * cv::Point2d(simplex[nextNodeIdx][0], simplex[nextNodeIdx][1]);
+                vizWindow.AddLine(prevPoint.x, prevPoint.y, currPoint.x, currPoint.y, color);
             }
 
-            vizWindow.AddArrow(cv::Point(-200, 0), cv::Point(200, 0), viz::Color::white());
-            vizWindow.AddArrow(cv::Point(0, -200), cv::Point(0, 200), viz::Color::white());
+            vizWindow.AddArrow(-200., 0., 200., 0., viz::Color::white());
+            vizWindow.AddArrow(0., -200., 0., 200., viz::Color::white());
 
             cv::namedWindow(imageName, cv::WINDOW_AUTOSIZE);
             const auto image = vizWindow.CreateImage();

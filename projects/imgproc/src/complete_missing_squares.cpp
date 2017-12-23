@@ -1,4 +1,5 @@
-#include "imgproc/complete_missing_squares.h"
+#include "math_utils/square.h"
+#include "imgproc/find_edge_squares.h"
 #include <array>
 #include "common/exceptions.h"
 #include <cmath>
@@ -44,12 +45,12 @@ struct EdgeAngleFitter
         LOG(DESC(edges.size()));
         for (const auto& point : edges) {
             const auto p = cv::Point(int(point[0]), int(point[1]));
-            vizWindow.AddCircle(p, 2, viz::Color::red());
+            vizWindow.AddCircle(p.x, p.y, 2, viz::Color::red());
         }
     
         for (const auto& point : dominantEdges) {
             const auto p = cv::Point(int(point[0]), int(point[1]));
-            vizWindow.AddCircle(p, 2, viz::Color::yellow());
+            vizWindow.AddCircle(p.x, p.y, 2, viz::Color::yellow());
         }
     
         cv::namedWindow(imageName, cv::WINDOW_AUTOSIZE);
@@ -60,8 +61,8 @@ struct EdgeAngleFitter
 };
 
 void set_edge_vector(std::vector<double>& edgeVec, 
-    const cv::Point2d& p1, 
-    const cv::Point2d& p2)
+    const Point& p1, 
+    const Point& p2)
 {
     auto diffVec = p2 - p1;
 
@@ -69,34 +70,28 @@ void set_edge_vector(std::vector<double>& edgeVec,
     edgeVec[1] = diffVec.y;
 }
 
-cv::Point2d vec2Point2d(const std::vector<double>& v)
-{
-    ASSERT(v.size() == 2, "");
-    return cv::Point2d(v[0], v[1]);  
-}
-
-std::array<cv::Point2d, 2> choose_two_dominant_edge_cluster_centers(
+std::array<Point, 2> choose_two_dominant_edge_cluster_centers(
     std::vector<std::vector<double>> edgeClusterCenters)
 {
     auto rightMostIt = std::max_element(edgeClusterCenters.begin(), edgeClusterCenters.end(),
         [](const std::vector<double>& v1, const std::vector<double>& v2)
         { return v1[0] < v2[0]; });
 
-    const auto rightMost = vec2Point2d(*rightMostIt);
+    const auto rightMost = Point(*rightMostIt);
 
     edgeClusterCenters.erase(rightMostIt);
 
-    const auto mostVertical = vec2Point2d(*std::min_element(edgeClusterCenters.begin(), edgeClusterCenters.end(),
+    const auto mostVertical = Point(*std::min_element(edgeClusterCenters.begin(), edgeClusterCenters.end(),
         [rightMost](const std::vector<double>& v1, const std::vector<double>& v2)
-        { return compute_rotation_angle(rightMost, vec2Point2d(v1)) < compute_rotation_angle(rightMost, vec2Point2d(v2)); }));
+        { return compute_rotation_angle(rightMost, Point(v1)) < compute_rotation_angle(rightMost, Point(v2)); }));
 
-    return std::array<cv::Point2d, 2>{
-        rightMost / cv::norm(rightMost), 
-        mostVertical / cv::norm(mostVertical)};
+    return std::array<Point, 2>{
+        rightMost.Normalized(), 
+        mostVertical.Normalized()};
 
 }
 
-std::array<cv::Point2d, 2> find_dominant_edgedirections(
+std::array<Point, 2> find_dominant_edgedirections(
     const std::vector<Square>& squares)
 {
     const size_t numberOfEdges = squares.size() * 4;
@@ -121,22 +116,22 @@ std::array<cv::Point2d, 2> find_dominant_edgedirections(
 enum class BandDirection { HORIZONTAL, VERTICAL };
 
 BandDirection edge_to_band_direction(
-    const cv::Point2d& startPoint,
-    const cv::Point2d& endPoint)
+    const Point& startPoint,
+    const Point& endPoint)
 {
     const auto difference = endPoint - startPoint;
-    if (std::abs(difference.y) < 0.5 * cv::norm(difference)) {
+    if (std::abs(difference.y) < 0.5 * difference.Norm()) {
         return BandDirection::VERTICAL;
     }
     return BandDirection::HORIZONTAL;
 }
 
 
-std::array<std::pair<cv::Point2d, cv::Point2d>, 2> get_edge_pair_band_direction(
+std::array<std::pair<Point, Point>, 2> get_edge_pair_band_direction(
     const Square& square, 
     const BandDirection b)
 {
-    std::array<std::pair<cv::Point2d, cv::Point2d>, 2> ret;
+    std::array<std::pair<Point, Point>, 2> ret;
     auto it = ret.begin();
     for (int i = 0; i < 4; ++i) {
         const int nextIndex = i < 3 ? (i + 1) : 0;
@@ -151,15 +146,13 @@ std::array<std::pair<cv::Point2d, cv::Point2d>, 2> get_edge_pair_band_direction(
     return ret;
 }
 
-cv::Point2d compute_normalized_line_difference_vector(
-    const std::pair<cv::Point2d, cv::Point2d>& edge,
-    const cv::Point2d& point)
+Point compute_normalized_line_difference_vector(
+    const std::pair<Point, Point>& edge,
+    const Point& point)
 {
     const auto diffVec = point - edge.first;
-    auto v = edge.second - edge.first;
-    v /= cv::norm(v);
-    auto ret = diffVec - diffVec.dot(v) * v;
-    ret /= cv::norm(ret);
+    const auto v = (edge.second - edge.first).Normalized();
+    const auto ret = (diffVec - diffVec.Dot(v) * v).Normalized();
 
     return ret;
 }
@@ -171,32 +164,11 @@ bool is_square_in_edge_band(
 {
     const auto edgePair = get_edge_pair_band_direction(centerSquare, b);
 
-    // const std::string imageName = STR(CBR_FANCY_FUNCTION << "dbg");
-    // viz::Visualizer2D vizWindow(imageName);
-    // for (const auto& s : centerSquare.corners) {
-    //     vizWindow.AddCircle(cv::Point(s), 3, viz::Color::blue());
-    // }
-
-    // vizWindow.AddCircle(otherSquare.middle, 4, viz::Color::cyan());
-
     const auto d1 = compute_normalized_line_difference_vector(edgePair[0], otherSquare.middle);
     const auto d2 = compute_normalized_line_difference_vector(edgePair[1], otherSquare.middle);
 
-    // const auto line1 = Line2d<double>::FromTwoPointsOnLine(edgePair[0].first, edgePair[0].second);
-    // const auto line2 = Line2d<double>::FromTwoPointsOnLine(edgePair[1].first, edgePair[1].second);
-
-    // vizWindow.AddArrow(otherSquare.middle - d1, otherSquare.middle, viz::Color::magenta());
-    // vizWindow.AddArrow(otherSquare.middle - d2, otherSquare.middle, viz::Color::magenta());
-
-    // vizWindow.AddLine(cv::Point(line1.At(-1.)), cv::Point(line1.At(1.)), viz::Color::blue(), 4);
-    // vizWindow.AddLine(cv::Point(line2.At(-1.)), cv::Point(line2.At(1.)), viz::Color::yellow(), 4);
-
-    // vizWindow.AddText(STR(int(100.0 * (cv::norm(d2 - d1)))), 0.5 * (centerSquare.middle + otherSquare.middle), 0, 0.3, viz::Color::white());
-
-    // vizWindow.Spin();
     static const double sqrt2 = std::sqrt(2);
-
-    return cv::norm(d2 - d1) > sqrt2;
+    return d2.Distance(d1) > sqrt2;
 }
 
 void insert_to_band_matches(
@@ -229,7 +201,7 @@ std::vector<Square> complete_missing_squares(
     const auto& f1 = dominantEdgeDirections[0];
 	const auto& f2 = dominantEdgeDirections[1];
 
-    const auto rotate = [&f1, &f2](const cv::Point2d& p){ return cv::Point2d(f1.x * p.x + f1.y * p.y, f2.x * p.x + f2.y * p.y); };
+    const auto rotate = [&f1, &f2](const Point& p){ return Point(f1.x * p.x + f1.y * p.y, f2.x * p.x + f2.y * p.y); };
 
     auto rotatedSquares = std::vector<Square>(squares.size(), Square());
     for (size_t iSquare = 0; iSquare < squares.size(); ++iSquare) {
@@ -250,10 +222,10 @@ std::vector<Square> complete_missing_squares(
             }
         }
     }
-    std::array<std::vector<std::pair<cv::Point2d, cv::Point2d>>, 2> middleLines;
+    
+    std::array<std::vector<std::pair<Point, Point>>, 2> middleLines;
     for (const auto bandDirection : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
         for (const auto& matches : bandMatches[int(bandDirection)]) {
-            LOG(DESC(matches.size()));
             size_t minEdgeIndex, maxEdgeIndex; 
             switch(bandDirection) {
                 case BandDirection::HORIZONTAL:
@@ -271,38 +243,54 @@ std::vector<Square> complete_missing_squares(
         }
     }
 
-    std::vector<cv::Point2d> newMiddlePoints;
-    const cv::Point2d approximateBoardMiddle = fsum(rotatedSquares, [](const Square& s){ return s.middle; }) / double(rotatedSquares.size());
+    std::vector<Point> newMiddlePoints;
+    const Point approximateBoardMiddle = fsum(rotatedSquares, [](const Square& s){ return s.middle; }) / double(rotatedSquares.size());
     const double averageEdgeLength = fsum(rotatedSquares, [](const Square& s){ return s.Circumference(); }) / 4. / double(rotatedSquares.size());
     const double maxDistance = 10.0 * averageEdgeLength;
     for (const auto& hLineEnds : middleLines[int(BandDirection::HORIZONTAL)]) {
-        const auto hLine = Line2d<double>::FromTwoPointsOnLine(hLineEnds.first, hLineEnds.second);
+        const auto hLine = Line2d::FromTwoPointsOnLine(hLineEnds.first, hLineEnds.second);
         for (const auto& vLineEnds : middleLines[int(BandDirection::VERTICAL)]) {
-            const auto vLine = Line2d<double>::FromTwoPointsOnLine(vLineEnds.first, vLineEnds.second);
+            const auto vLine = Line2d::FromTwoPointsOnLine(vLineEnds.first, vLineEnds.second);
             const auto intersection = hLine.Intersection(vLine);
-            // const std::string imageName = STR(CBR_FANCY_FUNCTION << "dbg");
-            // viz::Visualizer2D vizWindow(imageName);
-            // for (const auto& s : rotatedSquares) {
-            //     vizWindow.AddCircle(cv::Point(s.middle), 4, viz::Color::red());
-            //     for (const auto& c : s.corners) {
-            //         vizWindow.AddCircle(cv::Point(c), 3, viz::Color::blue());
-            //     }
-            //     for (size_t i = 0; i < 4; ++i) {
-            //         vizWindow.AddLine(cv::Point(s[i]), cv::Point(s[(i + 1) % 4]), viz::Color::blue());
-            //     }
-            // }
-            // vizWindow.AddLine(cv::Point(hLine.At(-1.)), cv::Point(hLine.At(1.)), viz::Color::blue(), 4);
-            // vizWindow.AddLine(cv::Point(vLine.At(-1.)), cv::Point(vLine.At(1.)), viz::Color::yellow(), 4);
 
-            if (cv::norm(intersection - approximateBoardMiddle) < maxDistance) {
+            if (intersection.Distance(approximateBoardMiddle) < maxDistance) {
                 newMiddlePoints.push_back(intersection);
-                // vizWindow.AddCircle(cv::Point(intersection), 2, viz::Color::magenta());
-                // vizWindow.AddCircle(cv::Point(intersection), 4, viz::Color::magenta());
-                // vizWindow.AddCircle(cv::Point(intersection), 6, viz::Color::magenta());
-                // vizWindow.AddCircle(cv::Point(intersection), 8, viz::Color::magenta());
             }
-            
-            // vizWindow.Spin();
+        }
+    }
+
+    std::vector<Point> allMiddlePoints;
+    const double lineDistanceThreshold = averageEdgeLength / 3.;
+    for (const auto& middlePoint : newMiddlePoints) {
+        // if (std::find_if(allMiddlePoints.begin(), allMiddlePoints.end(), [&](const Point& p){ return (p - middlePoint) < lineDistanceThreshold; }) == allMiddlePoints.end()) {
+        if (std::find_if(allMiddlePoints.begin(), allMiddlePoints.end(), [&](const Point& p){ return p.IsCloserThan(middlePoint, lineDistanceThreshold); }) == allMiddlePoints.end()) {
+            allMiddlePoints.push_back(middlePoint);
+        }
+    }
+
+    for (const auto& square : rotatedSquares) {
+        const auto& middlePoint = square.middle;
+        if (std::find_if(allMiddlePoints.begin(), allMiddlePoints.end(), [&](const Point& p){ return p.IsCloserThan(middlePoint, lineDistanceThreshold); }) == allMiddlePoints.end()) {
+            allMiddlePoints.push_back(middlePoint);
+        }
+    }
+
+    for (const auto bandDirection : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
+        for (auto& lineEnds : middleLines[int(bandDirection)]) {
+            auto line = Line2d::FromTwoPointsOnLine(lineEnds.first, lineEnds.second);
+            for (const auto& p : allMiddlePoints) {
+                if (line.DistanceFromPoint(p) < lineDistanceThreshold) {
+                    const double tmin = line.ClosestTimeArg(p);
+                    if (tmin < 0.) {
+                        lineEnds.first = p;
+                        line = Line2d::FromTwoPointsOnLine(lineEnds.first, lineEnds.second);
+                    }
+                    else if (tmin > 1.) {
+                        lineEnds.second = p;
+                        line = Line2d::FromTwoPointsOnLine(lineEnds.first, lineEnds.second);
+                    }
+                }
+            }
         }
     }
 
@@ -310,23 +298,27 @@ std::vector<Square> complete_missing_squares(
         const std::string imageName = STR(CBR_FANCY_FUNCTION << "dbg");
         viz::Visualizer2D vizWindow(imageName);
         for (const auto& s : rotatedSquares) {
-            vizWindow.AddCircle(cv::Point(s.middle), 4, viz::Color::red());
+            vizWindow.AddCircle(s.middle.x, s.middle.y, 4, viz::Color::red());
             for (const auto& c : s.corners) {
-                vizWindow.AddCircle(cv::Point(c), 3, viz::Color::blue());
+                vizWindow.AddCircle(c.x, c.y, 3, viz::Color::blue());
             }
             for (size_t i = 0; i < 4; ++i) {
-                vizWindow.AddLine(cv::Point(s[i]), cv::Point(s[(i + 1) % 4]), viz::Color::blue());
+                vizWindow.AddLine(s[i].x, s[i].y, s[(i + 1) % 4].x, s[(i + 1) % 4].y, viz::Color::blue());
             }
         }
-        const auto colors = std::vector<cv::Scalar>{viz::Color::blue(), viz::Color::yellow()};
+        const auto colors = std::vector<viz::Color>{viz::Color::magenta(), viz::Color::yellow()};
         for (const auto bandDir : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
             for (const auto& line : middleLines[int(bandDir)]) {
-                vizWindow.AddLine(line.first, line.second, colors[int(bandDir)]);
+                vizWindow.AddLine(line.first.x, line.first.y, line.second.x, line.second.y, colors[int(bandDir)]);
             }
         }
 
         for (const auto& p : newMiddlePoints) {
-            vizWindow.AddCircle(cv::Point(p), 8, viz::Color::green());
+            vizWindow.AddCircle(p.x, p.y, 8, viz::Color::magenta());
+        }
+
+        for (const auto& p : allMiddlePoints) {
+            vizWindow.AddCircle(p.x, p.y, 6, viz::Color::cyan());
         }
 
         vizWindow.Spin();    

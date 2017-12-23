@@ -47,8 +47,14 @@ private:
 };
 
 
+static cv::Scalar ToCvScalar(const Color& c) 
+{
+    return cv::Scalar(c.mBlue, c.mGreen, c.mRed); 
+}
+
 struct Visualizer2D::Impl
 {
+
     struct Circle
     {
         Circle() = default;
@@ -166,7 +172,7 @@ struct Visualizer2D::Impl
     void Spin();
     cv::Mat CreateImage();
     bool mApplyMirroring = true;
-    cv::Scalar mImageBackgroudColor = Color::black();
+    cv::Scalar mImageBackgroudColor = ToCvScalar(Color::black());
     double mAxisMultiplicationFactor = 1.3;
     int mDiagonalLength = 1000;
     std::vector<Circle> mCircles;
@@ -306,9 +312,9 @@ void Visualizer2D::SetAxisMultiplicationFactor(const double mf)
     mImpl->mAxisMultiplicationFactor = mf;
 }
 
-void Visualizer2D::SetImageBackgroundColor(const cv::Scalar& bgColor)
+void Visualizer2D::SetImageBackgroundColor(const Color& bgColor)
 {
-    mImpl->mImageBackgroudColor = bgColor;
+    mImpl->mImageBackgroudColor = ToCvScalar(bgColor);
 }
 
 void Visualizer2D::SetDiagonalLength(const int diagonalLength)
@@ -321,52 +327,64 @@ void Visualizer2D::SetMirroring(const bool applyMirroring)
     mImpl->mApplyMirroring = applyMirroring;
 }
 
-void Visualizer2D::AddCircle(const cv::Point& center,
+void Visualizer2D::AddCircle(const double centerX,
+    const double centerY,
     const int radius,
-    const cv::Scalar color,
+    const Color color,
     const int thickness,
     const int lineType, 
     const int shift)
 {
-    mImpl->mCircles.push_back(Impl::Circle(center, radius, 
-        color, thickness, lineType, shift));
+    mImpl->mCircles.push_back(Impl::Circle(cv::Point(int(centerX), int(centerY)), radius, 
+        ToCvScalar(color), thickness, lineType, shift));
 }
 
 void Visualizer2D::AddText(
     const std::string& text,
-    const cv::Point& center,
+    const double centerX,
+    const double centerY,
     const int fontFace,
     const double fontScale,
-    const cv::Scalar color,
+    const Color color,
     const int thickness,
     const int lineType, 
     const bool bottomLeftOrigin)
 {
-    mImpl->mTexts.push_back(Impl::Text(text, center, fontFace, 
-        fontScale, color, thickness, lineType, 
+    mImpl->mTexts.push_back(Impl::Text(text, cv::Point(int(centerX), int(centerY)), 
+    fontFace, fontScale, ToCvScalar(color), thickness, lineType, 
         bottomLeftOrigin));
 }
 
-void Visualizer2D::AddLine(const cv::Point& pt1,
-    const cv::Point& pt2,
-    const cv::Scalar color,
+void Visualizer2D::AddLine(const double x1,
+    const double y1,
+    const double x2,
+    const double y2,
+    const Color color,
     const int thickness,
     const int lineType,
     const int shift)
 {
-    mImpl->mLines.push_back(Impl::Line(pt1, pt2, color, thickness,
+    mImpl->mLines.push_back(Impl::Line(
+        cv::Point(int(x1), int(y1)), 
+        cv::Point(int(x2), int(y2)), 
+        ToCvScalar(color), thickness,
         lineType, shift));
 }
 
-void Visualizer2D::AddArrow(const cv::Point& pt1,
-    const cv::Point& pt2,
-    const cv::Scalar color,
+void Visualizer2D::AddArrow(const double x1,
+    const double y1,
+    const double x2,
+    const double y2,
+    const Color color,
     const int thickness,
     const int lineType,
     const int shift,
     const double tipLength)
 {
-    mImpl->mArrows.push_back(Impl::Arrow(pt1, pt2, color, thickness, lineType, shift, tipLength));
+    mImpl->mArrows.push_back(Impl::Arrow(
+        cv::Point(int(x1), int(y1)), 
+        cv::Point(int(x2), int(y2)),  
+        ToCvScalar(color), thickness, lineType, shift, tipLength));
 }
 
 void Visualizer2D::Spin()

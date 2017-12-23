@@ -11,7 +11,7 @@ double approximate_square_area(const Square& square)
 {
     double maxDiagonalLength = -1.0;
     for (const auto& corner : square.corners) {
-        const double diagonalLength = cv::norm(square.middle - corner);
+        const double diagonalLength = square.middle.Distance(corner);
         maxDiagonalLength = std::max(maxDiagonalLength, diagonalLength);
     }
 

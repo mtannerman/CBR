@@ -26,7 +26,7 @@ cv::Mat preprocess_image(const cv::Mat& image)
 	const auto& f1 = dominantEdgeDirections[0];
 	const auto& f2 = dominantEdgeDirections[1];
 
-	auto rotate = [&f1, &f2](const cv::Point& p){ return cv::Point2d(f1.x * p.x + f1.y * p.y, f2.x * p.x + f2.y * p.y); };
+	auto rotate = [&f1, &f2](const Point& p){ return Point(f1.x * p.x + f1.y * p.y, f2.x * p.x + f2.y * p.y); };
 	cv::Mat rotMx(2, 3, CV_64F, cv::Scalar(0.0));
 	rotMx.at<double>(0, 0) = f1.x;
 	rotMx.at<double>(0, 1) = f1.y;
@@ -41,7 +41,7 @@ cv::Mat preprocess_image(const cv::Mat& image)
           for (int i = 0; i < 4; ++i) {
             const auto point = rotate(square.corners[i]);
             const auto nextPoint = rotate(square.corners[i < 3 ? (i + 1) : 0]);
-            cv::line(rotatedImage, point, nextPoint, cv::Scalar(255., 0., 0.), 2);
+            cv::line(rotatedImage, cv::Point(point.x, point.y), cv::Point(nextPoint.x, nextPoint.y), cv::Scalar(255., 0., 0.), 2);
           }
         }
         cv::namedWindow("rotimg", 1);

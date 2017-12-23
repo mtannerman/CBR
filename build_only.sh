@@ -2,4 +2,5 @@
 
 clear
 cd build
-make -j4 CBRMain
+make CBRMain 2>&1 | ../compileparser.py
+# make CBRMain

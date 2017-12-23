@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <opencv2/core.hpp>
-#include "imgproc/square.h"
+#include "math_utils/square.h"
 
 namespace cbr
 {

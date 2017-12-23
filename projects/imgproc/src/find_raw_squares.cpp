@@ -67,7 +67,13 @@ std::vector<Square> find_squares(const cv::Mat& image)
                     }
 
                     if ( maxCosine < 0.3 ) {
-                        squares.push_back(Square(approx));
+                        Square newSquare;
+                        for (size_t i = 0; i < 4; ++i) {
+                            newSquare[i].x = double(approx[i].x);
+                            newSquare[i].y = double(approx[i].y);
+                        }
+                        newSquare.Recenter();
+                        squares.push_back(newSquare);
                     }
                 }
             }

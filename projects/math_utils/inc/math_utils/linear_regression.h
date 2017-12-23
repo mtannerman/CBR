@@ -6,5 +6,5 @@
 
 namespace cbr
 {
-    Line2d<int> fit_line(const std::vector<cv::Point2d>& points);
+    Line2d fit_line(const std::vector<Point>& points);
 }
