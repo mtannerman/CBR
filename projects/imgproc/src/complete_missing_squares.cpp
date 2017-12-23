@@ -196,8 +196,8 @@ void insert_to_band_matches(
 void visualize_square_completion(
     const std::string& windowName,
     const std::vector<Square>& squares,
-    const std::array<std::vector<std::pair<Point, Point>>, 2>& middleLines,
-    const std::vector<Point>& newMiddlePoints,
+    const std::array<std::vector<Line2d>, 2>& middleLines,
+    const std::vector<Point>& middleLineIntersections,
     const std::vector<Point>& allMiddlePoints)
 {
     const std::string imageName = STR(CBR_FANCY_FUNCTION << windowName);
@@ -214,10 +214,10 @@ void visualize_square_completion(
     const auto colors = std::vector<viz::Color>{viz::Color::magenta(), viz::Color::yellow()};
     for (const auto bandDir : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
         for (const auto& line : middleLines[int(bandDir)]) {
-            vizWindow.AddLine(line.first.x, line.first.y, line.second.x, line.second.y, colors[int(bandDir)]);
+            vizWindow.AddLine(line.P.x, line.P.y, line.At(1.).x, line.At(1.).y, colors[int(bandDir)]);
         }
     }
-    for (const auto& p : newMiddlePoints) {
+    for (const auto& p : middleLineIntersections) {
         vizWindow.AddCircle(p.x, p.y, 8, viz::Color::magenta());
     }
     for (const auto& p : allMiddlePoints) {
@@ -264,26 +264,27 @@ std::array<std::vector<std::set<size_t>>, 2> compute_band_matches(
     return bandMatches;
 }
 
-std::array<std::vector<std::pair<Point, Point>>, 2> compute_middle_lines_from_band_matches(
+std::array<std::vector<Line2d>, 2> compute_middle_lines_from_band_matches(
     const std::vector<Square>& squares,
     const std::array<std::vector<std::set<size_t>>, 2>& bandMatches)
 {
-    std::array<std::vector<std::pair<Point, Point>>, 2> middleLines;
+    std::array<std::vector<Line2d>, 2> middleLines;
     for (const auto bandDirection : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
         for (const auto& matches : bandMatches[int(bandDirection)]) {
             size_t minEdgeIndex, maxEdgeIndex; 
-            switch(bandDirection) {
-                case BandDirection::HORIZONTAL:
-                    minEdgeIndex = *std::min_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.x < squares[i2].middle.x; });
-                    maxEdgeIndex = *std::max_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.x < squares[i2].middle.x; });
-                break;
-                case BandDirection::VERTICAL:
-                    minEdgeIndex = *std::min_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.y < squares[i2].middle.y; });
-                    maxEdgeIndex = *std::max_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.y < squares[i2].middle.y; });
-                break;
+            if (bandDirection == BandDirection::HORIZONTAL) {
+                const auto mm = std::minmax_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.x < squares[i2].middle.x; });
+                minEdgeIndex = *mm.first;
+                maxEdgeIndex = *mm.second;
+            }
+            else {
+                const auto mm = std::minmax_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.y < squares[i2].middle.y; });
+                minEdgeIndex = *mm.first;
+                maxEdgeIndex = *mm.second;
             }
             if (minEdgeIndex != maxEdgeIndex) {
-                middleLines[int(bandDirection)].push_back({squares[minEdgeIndex].middle, squares[maxEdgeIndex].middle});
+                const auto newLine = Line2d::FromTwoPointsOnLine(squares[minEdgeIndex].middle, squares[maxEdgeIndex].middle);
+                middleLines[int(bandDirection)].push_back(newLine);
             }
         }
     }
@@ -293,26 +294,70 @@ std::array<std::vector<std::pair<Point, Point>>, 2> compute_middle_lines_from_ba
 
 std::vector<Point> compute_middle_points_from_middle_line_intersections(
     const std::vector<Square>& squares,
-    const std::array<std::vector<std::pair<Point, Point>>, 2>& middleLines,
+    const std::array<std::vector<Line2d>, 2>& middleLines,
     const double averageEdgeLength)
 {
-    std::vector<Point> newMiddlePoints;
+    std::vector<Point> middleLineIntersections;
     const Point approximateBoardMiddle = fsum(squares, [](const Square& s){ return s.middle; }) / double(squares.size());
     
     const double maxDistance = 10.0 * averageEdgeLength;
-    for (const auto& hLineEnds : middleLines[int(BandDirection::HORIZONTAL)]) {
-        const auto hLine = Line2d::FromTwoPointsOnLine(hLineEnds.first, hLineEnds.second);
-        for (const auto& vLineEnds : middleLines[int(BandDirection::VERTICAL)]) {
-            const auto vLine = Line2d::FromTwoPointsOnLine(vLineEnds.first, vLineEnds.second);
+    for (const auto& hLine : middleLines[int(BandDirection::HORIZONTAL)]) {
+        for (const auto& vLine : middleLines[int(BandDirection::VERTICAL)]) {
             const auto intersection = hLine.Intersection(vLine);
 
             if (intersection.Distance(approximateBoardMiddle) < maxDistance) {
-                newMiddlePoints.push_back(intersection);
+                middleLineIntersections.push_back(intersection);
             }
         }
     }
 
-    return newMiddlePoints;
+    return middleLineIntersections;
+}
+
+std::vector<Point> collect_all_middle_points(
+    const std::vector<Square>& squares,
+    const std::vector<Point>& middleLineIntersections,
+    const double averageEdgeLength)
+{
+    std::vector<Point> ret;
+    const double thres = averageEdgeLength / 3.;
+    for (const auto& middlePoint : middleLineIntersections) {
+        if (std::find_if(ret.begin(), ret.end(), [&](const Point& p){ return p.IsCloserThan(middlePoint, thres); }) == ret.end()) {
+            ret.push_back(middlePoint);
+        }
+    }
+
+    for (const auto& square : squares) {
+        const auto& middlePoint = square.middle;
+        if (std::find_if(ret.begin(), ret.end(), [&](const Point& p){ return p.IsCloserThan(middlePoint, thres); }) == ret.end()) {
+            ret.push_back(middlePoint);
+        }
+    }
+
+    return ret;
+}
+
+void extend_middle_lines(
+    std::array<std::vector<Line2d>, 2>& middleLines,
+    const std::vector<Point>& allMiddlePoints,
+    const double averageEdgeLength)
+{
+    const double lineDistanceThreshold = averageEdgeLength / 3.;
+    for (const auto bandDirection : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
+        for (auto& line : middleLines[int(bandDirection)]) {
+            for (const auto& p : allMiddlePoints) {
+                if (line.DistanceFromPoint(p) < lineDistanceThreshold) {
+                    const double tmin = line.ClosestTimeArg(p);
+                    if (tmin < 0.) {
+                        line = Line2d::FromTwoPointsOnLine(p, line.P + line.v);
+                    }
+                    else if (tmin > 1.) {
+                        line = Line2d::FromTwoPointsOnLine(line.P, p);
+                    }
+                }
+            }
+        }
+    }
 }
 
 std::vector<Square> complete_missing_squares(
@@ -324,44 +369,25 @@ std::vector<Square> complete_missing_squares(
     const auto bandMatches = compute_band_matches(rotatedSquares);
     auto middleLines = compute_middle_lines_from_band_matches(rotatedSquares, bandMatches);
     const double averageEdgeLength = fsum(rotatedSquares, [](const Square& s){ return s.Circumference(); }) / 4. / double(rotatedSquares.size());
-    const auto newMiddlePoints = compute_middle_points_from_middle_line_intersections(rotatedSquares, middleLines, averageEdgeLength);
-
-    std::vector<Point> allMiddlePoints;
-    const double lineDistanceThreshold = averageEdgeLength / 3.;
-    for (const auto& middlePoint : newMiddlePoints) {
-        if (std::find_if(allMiddlePoints.begin(), allMiddlePoints.end(), [&](const Point& p){ return p.IsCloserThan(middlePoint, lineDistanceThreshold); }) == allMiddlePoints.end()) {
-            allMiddlePoints.push_back(middlePoint);
-        }
+    auto middleLineIntersections = compute_middle_points_from_middle_line_intersections(rotatedSquares, middleLines, averageEdgeLength);
+    auto allMiddlePoints = collect_all_middle_points(rotatedSquares, middleLineIntersections, averageEdgeLength);
+    extend_middle_lines(middleLines, allMiddlePoints, averageEdgeLength);
+    for (int i = 0; i < 1; ++i) {
+        middleLineIntersections = compute_middle_points_from_middle_line_intersections(rotatedSquares, middleLines, averageEdgeLength);
+        allMiddlePoints = collect_all_middle_points(rotatedSquares, middleLineIntersections, averageEdgeLength);
+        extend_middle_lines(middleLines, allMiddlePoints, averageEdgeLength);
     }
 
-    for (const auto& square : rotatedSquares) {
-        const auto& middlePoint = square.middle;
-        if (std::find_if(allMiddlePoints.begin(), allMiddlePoints.end(), [&](const Point& p){ return p.IsCloserThan(middlePoint, lineDistanceThreshold); }) == allMiddlePoints.end()) {
-            allMiddlePoints.push_back(middlePoint);
-        }
-    }
+    // std::vector<Square> squaresWithOneMiddleLine;
+    // for (const auto& square : rotatedSquares) {
+        // const bool foundHorizontalLine = std::find_if(middleLines[0].begin(), middleLines[0].end(), [=](){})
+    // }
+    // std::vector<Line2d> virtualMiddleLines;
 
-    for (const auto bandDirection : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
-        for (auto& lineEnds : middleLines[int(bandDirection)]) {
-            auto line = Line2d::FromTwoPointsOnLine(lineEnds.first, lineEnds.second);
-            for (const auto& p : allMiddlePoints) {
-                if (line.DistanceFromPoint(p) < lineDistanceThreshold) {
-                    const double tmin = line.ClosestTimeArg(p);
-                    if (tmin < 0.) {
-                        lineEnds.first = p;
-                        line = Line2d::FromTwoPointsOnLine(lineEnds.first, lineEnds.second);
-                    }
-                    else if (tmin > 1.) {
-                        lineEnds.second = p;
-                        line = Line2d::FromTwoPointsOnLine(lineEnds.first, lineEnds.second);
-                    }
-                }
-            }
-        }
-    }
+    
 
     if (Config::GetInstance().GetBool("visualizeBandMatches")) {
-        visualize_square_completion("second", rotatedSquares, middleLines, newMiddlePoints, allMiddlePoints);
+        visualize_square_completion("second", rotatedSquares, middleLines, middleLineIntersections, allMiddlePoints);
     }
 
 
