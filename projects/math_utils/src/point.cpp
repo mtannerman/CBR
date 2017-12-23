@@ -16,8 +16,8 @@ Point::Point(const double val)
 Point::Point(const std::vector<double>& v)
 {
     ASSERT(v.size() == 2, "");
-    x= v[0];
-    y= v[1]; 
+    x = v[0];
+    y = v[1]; 
 }
 
 Point& Point::Transform(std::function<void(const double&)> f)
@@ -83,31 +83,21 @@ double& Point::operator[](const size_t idx)
 
 Point& Point::operator+=(const Point& other)
 {
-    x += other.x; y += other.y;
+    x += other.x; 
+    y += other.y;
     return *this;
-}
-
-Point Point::operator+(Point other) const
-{
-    other += *this;
-    return other;
 }
 
 Point& Point::operator-=(const Point& other)
 {
-    x -= other.x; y -= other.y;
+    x -= other.x; 
+    y -= other.y;
     return *this;
-}
-
-Point Point::operator-(Point other) const
-{
-    other -= *this;
-    return other;
 }
 
 bool Point::operator==(const Point& other) const
 {
-    return x == other.x && y == other.x;
+    return x == other.x && y == other.y;
 }
 
 bool Point::IsInVicinity(const Point& other, const double radius) const
@@ -122,7 +112,8 @@ bool Point::IsCloserThan(const Point& other, const double radius) const
 
 Point& Point::operator*=(const double d)
 {
-    x *= d; y *= d;
+    x *= d; 
+    y *= d;
     return *this;
 }
 
@@ -133,7 +124,8 @@ Point Point::operator*(const double d) const
 
 Point& Point::operator/=(const double d)
 {
-    x /= d; y /= d;
+    x /= d; 
+    y /= d;
     return *this;
 }
 
@@ -152,6 +144,16 @@ Point operator*(const double d, const Point& p)
     return p * d;
 }
 
+Point operator+(Point lhs, const Point& rhs)
+{
+    lhs += rhs;
+    return lhs;
+}
 
+Point operator-(Point lhs, const Point& rhs)
+{
+    lhs -= rhs;
+    return lhs;
+}
 
 }

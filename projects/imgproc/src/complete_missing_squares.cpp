@@ -193,59 +193,112 @@ void insert_to_band_matches(
     }
 }
 
-std::vector<Square> complete_missing_squares(
-    const std::vector<Square>& squares)
+void visualize_square_completion(
+    const std::string& windowName,
+    const std::vector<Square>& squares,
+    const std::array<std::vector<std::pair<Point, Point>>, 2>& middleLines,
+    const std::vector<Point>& newMiddlePoints,
+    const std::vector<Point>& allMiddlePoints)
 {
-    std::vector<Square> fullBoard;
-    const auto dominantEdgeDirections = find_dominant_edgedirections(squares);
+    const std::string imageName = STR(CBR_FANCY_FUNCTION << windowName);
+    viz::Visualizer2D vizWindow(imageName);
+    for (const auto& s : squares) {
+        vizWindow.AddCircle(s.middle.x, s.middle.y, 4, viz::Color::red());
+        for (const auto& c : s.corners) {
+            vizWindow.AddCircle(c.x, c.y, 3, viz::Color::blue());
+        }
+        for (size_t i = 0; i < 4; ++i) {
+            vizWindow.AddLine(s[i].x, s[i].y, s[(i + 1) % 4].x, s[(i + 1) % 4].y, viz::Color::blue());
+        }
+    }
+    const auto colors = std::vector<viz::Color>{viz::Color::magenta(), viz::Color::yellow()};
+    for (const auto bandDir : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
+        for (const auto& line : middleLines[int(bandDir)]) {
+            vizWindow.AddLine(line.first.x, line.first.y, line.second.x, line.second.y, colors[int(bandDir)]);
+        }
+    }
+    for (const auto& p : newMiddlePoints) {
+        vizWindow.AddCircle(p.x, p.y, 8, viz::Color::magenta());
+    }
+    for (const auto& p : allMiddlePoints) {
+        vizWindow.AddCircle(p.x, p.y, 6, viz::Color::cyan());
+    }
+    vizWindow.Spin();
+}
+
+std::vector<Square> compute_rotated_squares(
+    const std::vector<Square>& squares,
+    const std::array<Point, 2>& dominantEdgeDirections)
+{
     const auto& f1 = dominantEdgeDirections[0];
 	const auto& f2 = dominantEdgeDirections[1];
 
     const auto rotate = [&f1, &f2](const Point& p){ return Point(f1.x * p.x + f1.y * p.y, f2.x * p.x + f2.y * p.y); };
 
-    auto rotatedSquares = std::vector<Square>(squares.size(), Square());
+    auto ret = std::vector<Square>(squares.size(), Square());
     for (size_t iSquare = 0; iSquare < squares.size(); ++iSquare) {
         for (size_t iCorner = 0; iCorner < 4; ++iCorner) {
-            rotatedSquares[iSquare][iCorner] = rotate(squares[iSquare][iCorner]);
+            ret[iSquare][iCorner] = rotate(squares[iSquare][iCorner]);
         }
-        rotatedSquares[iSquare].middle = rotate(squares[iSquare].middle);
+        ret[iSquare].middle = rotate(squares[iSquare].middle);
     }
 
+    return ret;
+}
+
+std::array<std::vector<std::set<size_t>>, 2> compute_band_matches(
+    const std::vector<Square>& squares)
+{
     std::array<std::vector<std::set<size_t>>, 2> bandMatches;
-    for (size_t i = 0; i < rotatedSquares.size(); ++i) {
-        for (size_t j = i + 1; j < rotatedSquares.size(); ++j) {
+    for (size_t i = 0; i < squares.size(); ++i) {
+        for (size_t j = i + 1; j < squares.size(); ++j) {
             for (const auto b : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
-                if (is_square_in_edge_band(rotatedSquares[i], rotatedSquares[j], b) &&
-                    is_square_in_edge_band(rotatedSquares[j], rotatedSquares[i], b)) {
+                if (is_square_in_edge_band(squares[i], squares[j], b) &&
+                    is_square_in_edge_band(squares[j], squares[i], b)) {
                     insert_to_band_matches(bandMatches[int(b)], i, j);
                 }
             }
         }
     }
-    
+
+    return bandMatches;
+}
+
+std::array<std::vector<std::pair<Point, Point>>, 2> compute_middle_lines_from_band_matches(
+    const std::vector<Square>& squares,
+    const std::array<std::vector<std::set<size_t>>, 2>& bandMatches)
+{
     std::array<std::vector<std::pair<Point, Point>>, 2> middleLines;
     for (const auto bandDirection : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
         for (const auto& matches : bandMatches[int(bandDirection)]) {
             size_t minEdgeIndex, maxEdgeIndex; 
             switch(bandDirection) {
                 case BandDirection::HORIZONTAL:
-                    minEdgeIndex = *std::min_element(matches.begin(), matches.end(), [&rotatedSquares](const size_t i1, const size_t i2) { return rotatedSquares[i1].middle.x < rotatedSquares[i2].middle.x; });
-                    maxEdgeIndex = *std::max_element(matches.begin(), matches.end(), [&rotatedSquares](const size_t i1, const size_t i2) { return rotatedSquares[i1].middle.x < rotatedSquares[i2].middle.x; });
+                    minEdgeIndex = *std::min_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.x < squares[i2].middle.x; });
+                    maxEdgeIndex = *std::max_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.x < squares[i2].middle.x; });
                 break;
                 case BandDirection::VERTICAL:
-                    minEdgeIndex = *std::min_element(matches.begin(), matches.end(), [&rotatedSquares](const size_t i1, const size_t i2) { return rotatedSquares[i1].middle.y < rotatedSquares[i2].middle.y; });
-                    maxEdgeIndex = *std::max_element(matches.begin(), matches.end(), [&rotatedSquares](const size_t i1, const size_t i2) { return rotatedSquares[i1].middle.y < rotatedSquares[i2].middle.y; });
+                    minEdgeIndex = *std::min_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.y < squares[i2].middle.y; });
+                    maxEdgeIndex = *std::max_element(matches.begin(), matches.end(), [&squares](const size_t i1, const size_t i2) { return squares[i1].middle.y < squares[i2].middle.y; });
                 break;
             }
             if (minEdgeIndex != maxEdgeIndex) {
-                middleLines[int(bandDirection)].push_back({rotatedSquares[minEdgeIndex].middle, rotatedSquares[maxEdgeIndex].middle});
+                middleLines[int(bandDirection)].push_back({squares[minEdgeIndex].middle, squares[maxEdgeIndex].middle});
             }
         }
     }
 
+    return middleLines;
+}
+
+std::vector<Point> compute_middle_points_from_middle_line_intersections(
+    const std::vector<Square>& squares,
+    const std::array<std::vector<std::pair<Point, Point>>, 2>& middleLines,
+    const double averageEdgeLength)
+{
     std::vector<Point> newMiddlePoints;
-    const Point approximateBoardMiddle = fsum(rotatedSquares, [](const Square& s){ return s.middle; }) / double(rotatedSquares.size());
-    const double averageEdgeLength = fsum(rotatedSquares, [](const Square& s){ return s.Circumference(); }) / 4. / double(rotatedSquares.size());
+    const Point approximateBoardMiddle = fsum(squares, [](const Square& s){ return s.middle; }) / double(squares.size());
+    
     const double maxDistance = 10.0 * averageEdgeLength;
     for (const auto& hLineEnds : middleLines[int(BandDirection::HORIZONTAL)]) {
         const auto hLine = Line2d::FromTwoPointsOnLine(hLineEnds.first, hLineEnds.second);
@@ -259,10 +312,23 @@ std::vector<Square> complete_missing_squares(
         }
     }
 
+    return newMiddlePoints;
+}
+
+std::vector<Square> complete_missing_squares(
+    const std::vector<Square>& squares)
+{
+    std::vector<Square> fullBoard;
+    const auto dominantEdgeDirections = find_dominant_edgedirections(squares);
+    const auto rotatedSquares = compute_rotated_squares(squares, dominantEdgeDirections);
+    const auto bandMatches = compute_band_matches(rotatedSquares);
+    auto middleLines = compute_middle_lines_from_band_matches(rotatedSquares, bandMatches);
+    const double averageEdgeLength = fsum(rotatedSquares, [](const Square& s){ return s.Circumference(); }) / 4. / double(rotatedSquares.size());
+    const auto newMiddlePoints = compute_middle_points_from_middle_line_intersections(rotatedSquares, middleLines, averageEdgeLength);
+
     std::vector<Point> allMiddlePoints;
     const double lineDistanceThreshold = averageEdgeLength / 3.;
     for (const auto& middlePoint : newMiddlePoints) {
-        // if (std::find_if(allMiddlePoints.begin(), allMiddlePoints.end(), [&](const Point& p){ return (p - middlePoint) < lineDistanceThreshold; }) == allMiddlePoints.end()) {
         if (std::find_if(allMiddlePoints.begin(), allMiddlePoints.end(), [&](const Point& p){ return p.IsCloserThan(middlePoint, lineDistanceThreshold); }) == allMiddlePoints.end()) {
             allMiddlePoints.push_back(middlePoint);
         }
@@ -295,33 +361,7 @@ std::vector<Square> complete_missing_squares(
     }
 
     if (Config::GetInstance().GetBool("visualizeBandMatches")) {
-        const std::string imageName = STR(CBR_FANCY_FUNCTION << "dbg");
-        viz::Visualizer2D vizWindow(imageName);
-        for (const auto& s : rotatedSquares) {
-            vizWindow.AddCircle(s.middle.x, s.middle.y, 4, viz::Color::red());
-            for (const auto& c : s.corners) {
-                vizWindow.AddCircle(c.x, c.y, 3, viz::Color::blue());
-            }
-            for (size_t i = 0; i < 4; ++i) {
-                vizWindow.AddLine(s[i].x, s[i].y, s[(i + 1) % 4].x, s[(i + 1) % 4].y, viz::Color::blue());
-            }
-        }
-        const auto colors = std::vector<viz::Color>{viz::Color::magenta(), viz::Color::yellow()};
-        for (const auto bandDir : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
-            for (const auto& line : middleLines[int(bandDir)]) {
-                vizWindow.AddLine(line.first.x, line.first.y, line.second.x, line.second.y, colors[int(bandDir)]);
-            }
-        }
-
-        for (const auto& p : newMiddlePoints) {
-            vizWindow.AddCircle(p.x, p.y, 8, viz::Color::magenta());
-        }
-
-        for (const auto& p : allMiddlePoints) {
-            vizWindow.AddCircle(p.x, p.y, 6, viz::Color::cyan());
-        }
-
-        vizWindow.Spin();    
+        visualize_square_completion("second", rotatedSquares, middleLines, newMiddlePoints, allMiddlePoints);
     }
 
 

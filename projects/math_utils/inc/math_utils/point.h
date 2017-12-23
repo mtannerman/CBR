@@ -31,9 +31,7 @@ struct Point
     double& operator[](const size_t idx);
 
     Point& operator+=(const Point& other);
-    Point operator+(Point other) const;
     Point& operator-=(const Point& other);
-    Point operator-(Point other) const;
 
     Point& operator*=(const double d);
     Point operator*(const double d) const;
@@ -48,6 +46,8 @@ struct Point
     bool IsCloserThan(const Point& other, const double radius) const;
 };
 
+Point operator+(Point lhs, const Point& rhs);
+Point operator-(Point lhs, const Point& rhs);
 Point operator*(const double d, const Point& p);
 
 }
