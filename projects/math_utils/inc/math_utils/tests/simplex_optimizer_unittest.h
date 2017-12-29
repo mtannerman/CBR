@@ -4,4 +4,5 @@
 namespace cbr
 {
     bool run_simplex_optimizer_unittest();
+    void run_simplex_optimizer_playground();
 }

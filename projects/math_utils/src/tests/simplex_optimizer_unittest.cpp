@@ -10,6 +10,10 @@
 #include "common/cyclic_container.h"
 #include "opencv2/highgui.hpp"
 
+#include "math_utils/linear_regression.h"
+
+#include "math_utils/point.h"
+
 namespace cbr
 {
 
@@ -98,6 +102,33 @@ bool run_simplex_optimizer_unittest()
     run_simplex_test_1(false);
     // run_one_optimization_session();
     return true;
+}
+
+
+void run_simplex_optimizer_playground()
+{
+    const std::vector<Point> points{
+        {58.3968, 80.3811},
+        {177.667, 88.487},
+        {297.502, 83.7718},
+        {407.288, 76.3632},
+        {119.904, 83.8463},
+        {239.126, 87.7218},
+        {354.287, 80.4709}};
+    
+
+    const auto fitLine = fit_line(points);
+    LOG(DESC(fitLine.P) << ", " << DESC(fitLine.v));
+    const std::string imageName = STR(CBR_FANCY_FUNCTION << "dbg");
+    viz::Visualizer2D vizWindow(imageName);
+    for (const auto& p : points) {
+        vizWindow.AddCircle(p.x, p.y, 1, viz::Color::white());
+    }
+    const auto lineMin = fitLine.At(-fitLine.P.x / fitLine.v.x);
+    const auto lineMax = fitLine.At((points.back().x - fitLine.P.x) / fitLine.v.x);
+    vizWindow.AddLine(lineMin.x, lineMin.y, lineMax.x, lineMax.y, viz::Color::blue(), 4);
+    vizWindow.Spin();
+
 }
 
 }

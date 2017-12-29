@@ -25,4 +25,9 @@ struct Square
     Point middle;
 };
 
+struct IncompleteSquare
+{
+    std::array<Point, 4> corners;
+};
+
 }

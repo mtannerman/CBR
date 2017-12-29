@@ -3,6 +3,7 @@
 #include <functional>
 #include <cstddef>
 #include <vector>
+#include <ostream>
 
 namespace cbr
 {
@@ -18,10 +19,19 @@ struct Point
     Point(const double val);
     Point(const std::vector<double>& v);
 
+    static Point UnitVector(const size_t i);
+
     bool IsNull() const;
+    void ZeroOut();
+
+    void AlignTo(const Point& p);
+    Point Aligned(const Point& p) const;
+
+    double PolarAngle() const;
 
     Point Normalized() const;
     double Norm() const;
+    double SquaredNorm() const;
 
     void Normalize();
 
@@ -49,5 +59,7 @@ struct Point
 Point operator+(Point lhs, const Point& rhs);
 Point operator-(Point lhs, const Point& rhs);
 Point operator*(const double d, const Point& p);
+
+std::ostream& operator<<(std::ostream& os, const Point& p);
 
 }

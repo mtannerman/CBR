@@ -21,9 +21,10 @@ double angle(const cv::Point& pt1,
     return numerator / denominator;
 }
 
-std::vector<Square> find_squares(const cv::Mat& image)
+std::pair<std::vector<Square>, std::vector<IncompleteSquare>> find_squares(const cv::Mat& image)
 {
     std::vector<Square> squares;
+    std::vector<IncompleteSquare> incompleteSquares;
 	cv::Mat pyr, timg, gray0(image.size(), CV_8U), gray;
 	cv::pyrDown(image, pyr, cv::Size(image.cols/2, image.rows/2));
 	cv::pyrUp(pyr, timg, image.size());
@@ -79,7 +80,7 @@ std::vector<Square> find_squares(const cv::Mat& image)
             }
         }
     }
-    return squares;
+    return {squares, incompleteSquares};
 }
 
 }   // cbr

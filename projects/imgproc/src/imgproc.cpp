@@ -17,7 +17,8 @@ namespace cbr
 
 cv::Mat preprocess_image(const cv::Mat& image)
 {
-	const auto rawSquares = find_squares(image);
+	const auto rawSquaresAndIncompleteSquares = find_squares(image);
+	const auto& rawSquares = rawSquaresAndIncompleteSquares.first;
 	auto filteredSquares = apply_size_filtering(rawSquares, image.size());
 	filteredSquares = apply_cluster_filtering(filteredSquares);
 	order_squares(filteredSquares);

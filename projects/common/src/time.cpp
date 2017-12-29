@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iomanip>
 #include "common/logging.h"
+#include "common/exceptions.h"
 
 namespace cbr
 {
@@ -37,6 +38,31 @@ Time Time::FromMilliSeconds(int64_t seconds)
 	t.millisec = millisecs;
 	return t;
 }
+
+StopWatch::StopWatch()
+{
+    Restart();
+}
+
+void StopWatch::Restart()
+{
+    start = std::chrono::system_clock::now();
+}
+
+double StopWatch::ElapsedTime(const Unit unit)
+{
+    switch (unit) {
+        case Unit::MILLISEC:
+            return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+        case Unit::NANOSEC:
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
+        default:
+            return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() / 1000.;
+    }
+
+    THROW("unreachable code");
+
+    return 0.;
 }
 
 std::string ZeroExtendedString(const int64_t val, const int nDigits = 2)
@@ -51,10 +77,15 @@ std::string ZeroExtendedString(const int64_t val, const int nDigits = 2)
     return str;
 }
 
+}
+
+
+
+
 std::ostream& operator<<(std::ostream& os, const cbr::Time& t)
 {
     return os << t.hour << "::" << 
-    ZeroExtendedString(t.min) << "::" << 
-    ZeroExtendedString(t.sec) << "::" << 
-    ZeroExtendedString(t.millisec, 3);
+    cbr::ZeroExtendedString(t.min) << "::" << 
+    cbr::ZeroExtendedString(t.sec) << "::" << 
+    cbr::ZeroExtendedString(t.millisec, 3);
 }

@@ -3,6 +3,7 @@
 #include <cstdint>
 #include "cereal/cereal.hpp"
 #include <string>
+#include <chrono>
 
 namespace cbr
 {
@@ -39,6 +40,15 @@ struct Time
 	int64_t min;
 	int64_t sec;
 	int64_t millisec;
+};
+
+struct StopWatch
+{
+	StopWatch();
+	enum class Unit { MILLISEC, NANOSEC, SEC };
+	void Restart();
+	double ElapsedTime(const Unit unit = Unit::MILLISEC);
+	std::chrono::system_clock::time_point start;
 };
 
 }   //cbr

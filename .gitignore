@@ -6,3 +6,4 @@ dependencies/
 
 \.vscode/
 compileparser.py
+notebooks/

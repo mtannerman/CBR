@@ -13,6 +13,8 @@
 #include "math_utils/line.h"
 #include "math_utils/functional.h"
 #include <utility>
+#include "math_utils/linear_regression.h"
+#include <random>
 
 namespace cbr
 {
@@ -198,7 +200,10 @@ void visualize_square_completion(
     const std::vector<Square>& squares,
     const std::array<std::vector<Line2d>, 2>& middleLines,
     const std::vector<Point>& middleLineIntersections,
-    const std::vector<Point>& allMiddlePoints)
+    const std::vector<Point>& allMiddlePoints,
+    const std::vector<std::pair<Square, BandDirection>>& squaresWithOneMiddleLine,
+    const double averageEdgeLength,
+    const std::vector<std::pair<Line2d, BandDirection>>& extrapolatedLines)
 {
     const std::string imageName = STR(CBR_FANCY_FUNCTION << windowName);
     viz::Visualizer2D vizWindow(imageName);
@@ -211,29 +216,63 @@ void visualize_square_completion(
             vizWindow.AddLine(s[i].x, s[i].y, s[(i + 1) % 4].x, s[(i + 1) % 4].y, viz::Color::blue());
         }
     }
-    const auto colors = std::vector<viz::Color>{viz::Color::magenta(), viz::Color::yellow()};
-    for (const auto bandDir : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
-        for (const auto& line : middleLines[int(bandDir)]) {
-            vizWindow.AddLine(line.P.x, line.P.y, line.At(1.).x, line.At(1.).y, colors[int(bandDir)]);
-        }
-    }
+
     for (const auto& p : middleLineIntersections) {
         vizWindow.AddCircle(p.x, p.y, 8, viz::Color::magenta());
     }
     for (const auto& p : allMiddlePoints) {
         vizWindow.AddCircle(p.x, p.y, 6, viz::Color::cyan());
     }
+
+    for (const auto& p : squaresWithOneMiddleLine) {
+        const double c = 5.;
+        const auto& s = p.first;
+        vizWindow.AddLine(s.middle.x - c, s.middle.y - c, s.middle.x + c, s.middle.y + c, viz::Color::red()); 
+        vizWindow.AddLine(s.middle.x - c, s.middle.y + c, s.middle.x + c, s.middle.y - c, viz::Color::red()); 
+    }
+
+    const auto colors = std::vector<viz::Color>{viz::Color::magenta(), viz::Color::yellow()};
+    for (const auto bandDir : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
+        for (const auto& line : middleLines[int(bandDir)]) {
+            const auto thres = averageEdgeLength / 3.;
+            const auto c = std::count_if(allMiddlePoints.begin(), allMiddlePoints.end(), [thres, &line](const Point& p){ return line.DistanceFromPoint(p) < thres; });
+            for (const auto& s : squares) {
+                if (line.DistanceFromPoint(s.middle) < thres) {
+                    vizWindow.AddArrow(line.At(0.5).x, line.At(0.5).y, s.middle.x, s.middle.y, colors[int(bandDir)]);
+                }
+            }
+            vizWindow.AddText(STR(c), line.At(0.5).x, line.At(0.5).y, 0, 1, colors[int(bandDir)]);
+            vizWindow.AddLine(line.P.x, line.P.y, line.At(1.).x, line.At(1.).y, colors[int(bandDir)]);
+        }
+    }
+
+    for (const auto& lineDir : extrapolatedLines) {
+        const auto& line = lineDir.first;
+        vizWindow.AddLine(line.P.x, line.P.y, line.At(1.).x, line.At(1.).y, colors[int(lineDir.second)], 3, 5);
+    }
+
     vizWindow.Spin();
 }
 
-std::vector<Square> compute_rotated_squares(
-    const std::vector<Square>& squares,
+std::array<std::array<double, 2>, 2> compute_rotation_matrix(
     const std::array<Point, 2>& dominantEdgeDirections)
 {
     const auto& f1 = dominantEdgeDirections[0];
 	const auto& f2 = dominantEdgeDirections[1];
+    std::array<std::array<double, 2>, 2> ret;
+    ret[0][0] = f1.x;
+    ret[0][1] = f1.y;
+    ret[1][0] = f2.x;
+    ret[1][1] = f2.y;
+    return ret;
+}
 
-    const auto rotate = [&f1, &f2](const Point& p){ return Point(f1.x * p.x + f1.y * p.y, f2.x * p.x + f2.y * p.y); };
+std::vector<Square> compute_rotated_squares(
+    const std::vector<Square>& squares,
+    const std::array<std::array<double, 2>, 2>& rotationMatrix)
+{
+    const auto& R = rotationMatrix;
+    const auto rotate = [&R](const Point& p){ return Point(R[0][0] * p.x + R[0][1] * p.y, R[1][0] * p.x + R[1][1] * p.y); };
 
     auto ret = std::vector<Square>(squares.size(), Square());
     for (size_t iSquare = 0; iSquare < squares.size(); ++iSquare) {
@@ -360,12 +399,68 @@ void extend_middle_lines(
     }
 }
 
+std::vector<std::pair<Square, BandDirection>> collect_squares_with_one_middle_line(
+    const std::vector<Square>& squares,
+    const std::array<std::vector<Line2d>, 2>& middleLines,
+    const double averageEdgeLength)
+{
+    const double thres = averageEdgeLength / 3.;
+    std::vector<std::pair<Square, BandDirection>> ret;
+    for (const auto& square : squares) {
+        const bool foundHorizontalLine = std::find_if(middleLines[0].begin(), middleLines[0].end(), [thres, &square](const Line2d& l){ return l.DistanceFromPoint(square.middle) < thres; }) != middleLines[0].end();
+        const bool foundVerticalLine = std::find_if(middleLines[1].begin(), middleLines[1].end(), [thres, &square](const Line2d& l){ return l.DistanceFromPoint(square.middle) < thres; }) != middleLines[1].end();
+
+        if (!foundHorizontalLine != !foundVerticalLine) {
+            const auto b = foundHorizontalLine ? BandDirection::HORIZONTAL : BandDirection::VERTICAL;
+            ret.push_back({square, b});
+        }
+    }
+    return ret;
+}
+
+std::vector<std::pair<Line2d, BandDirection>> extrapolate_lines(
+    const std::vector<std::pair<Square, BandDirection>>& squaresWithOneMiddleLine,
+    const std::array<std::vector<Line2d>, 2>& middleLines,
+    const double averageEdgeLength)
+{
+    const double thres = averageEdgeLength / 3.;
+    std::vector<std::pair<Line2d, BandDirection>> extrapolatedLines;
+    for (const auto& squareDirPair : squaresWithOneMiddleLine) {
+        const auto& square = squareDirPair.first;
+        const auto bandDirection = squareDirPair.second;
+        const auto otherBandDirection = BandDirection(int(!bool(int(bandDirection))));
+
+        const auto& middleLinesForOtherDirection = middleLines[int(otherBandDirection)];
+        std::vector<Point> distanceAngles;
+        constexpr double pi = 3.141592653;
+        for (const auto& line : middleLinesForOtherDirection) {
+            Point newPoint;
+            newPoint.x = line.DistanceFromPoint(square.middle);
+            const double angle = line.v.Aligned(Point::UnitVector(size_t(bandDirection))).PolarAngle();
+            distanceAngles.push_back({line.DistanceFromPoint(square.middle), angle});
+        }
+
+        const auto fitLine = fit_line(distanceAngles);
+
+        const double extrapolatedAngle = fitLine.At(0).y;
+        auto newLine = Line2d::FromAngle(extrapolatedAngle);
+        newLine.P = square.middle;
+        newLine.v *= averageEdgeLength;
+        if (std::find_if(extrapolatedLines.begin(), extrapolatedLines.end(), [thres, &newLine](const auto& lineDir){ return newLine.DistanceFromPoint(lineDir.first.P) < thres; }) == extrapolatedLines.end()) {
+            extrapolatedLines.push_back({newLine, otherBandDirection});
+        }
+    }
+
+    return extrapolatedLines;
+}
+
 std::vector<Square> complete_missing_squares(
     const std::vector<Square>& squares)
 {
     std::vector<Square> fullBoard;
     const auto dominantEdgeDirections = find_dominant_edgedirections(squares);
-    const auto rotatedSquares = compute_rotated_squares(squares, dominantEdgeDirections);
+    const auto rotationMatrix = compute_rotation_matrix(dominantEdgeDirections);
+    const auto rotatedSquares = compute_rotated_squares(squares, rotationMatrix);
     const auto bandMatches = compute_band_matches(rotatedSquares);
     auto middleLines = compute_middle_lines_from_band_matches(rotatedSquares, bandMatches);
     const double averageEdgeLength = fsum(rotatedSquares, [](const Square& s){ return s.Circumference(); }) / 4. / double(rotatedSquares.size());
@@ -378,16 +473,21 @@ std::vector<Square> complete_missing_squares(
         extend_middle_lines(middleLines, allMiddlePoints, averageEdgeLength);
     }
 
-    // std::vector<Square> squaresWithOneMiddleLine;
-    // for (const auto& square : rotatedSquares) {
-        // const bool foundHorizontalLine = std::find_if(middleLines[0].begin(), middleLines[0].end(), [=](){})
-    // }
-    // std::vector<Line2d> virtualMiddleLines;
 
-    
+    const auto squaresWithOneMiddleLine = collect_squares_with_one_middle_line(rotatedSquares, middleLines, averageEdgeLength);
+    const auto extrapolatedLines = extrapolate_lines(squaresWithOneMiddleLine, middleLines, averageEdgeLength);
+    for (const auto& lineDir : extrapolatedLines) {
+        middleLines[int(lineDir.second)].push_back(lineDir.first);
+    }
+    middleLineIntersections = compute_middle_points_from_middle_line_intersections(rotatedSquares, middleLines, averageEdgeLength);
+    allMiddlePoints = collect_all_middle_points(rotatedSquares, middleLineIntersections, averageEdgeLength);
+    extend_middle_lines(middleLines, allMiddlePoints, averageEdgeLength);
 
     if (Config::GetInstance().GetBool("visualizeBandMatches")) {
-        visualize_square_completion("second", rotatedSquares, middleLines, middleLineIntersections, allMiddlePoints);
+        visualize_square_completion("second", rotatedSquares, middleLines,
+            middleLineIntersections, allMiddlePoints,
+            squaresWithOneMiddleLine, averageEdgeLength,
+            extrapolatedLines);
     }
 
 

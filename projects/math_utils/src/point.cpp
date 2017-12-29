@@ -20,6 +20,13 @@ Point::Point(const std::vector<double>& v)
     y = v[1]; 
 }
 
+Point Point::UnitVector(const size_t i)
+{
+    Point ret;
+    ret[i] = 1.;
+    return ret;
+}
+
 Point& Point::Transform(std::function<void(const double&)> f)
 {
     f(x); f(y);
@@ -31,9 +38,40 @@ bool Point::IsNull() const
     return x == 0. && y == 0.;
 }
 
+void Point::ZeroOut()
+{
+    x = 0.;
+    y = 0.;
+}
+
+void Point::AlignTo(const Point& p)
+{
+    if (Dot(p) < 0.) {
+        x = -x;
+        y = -y;
+    }
+}
+
+Point Point::Aligned(const Point& p) const
+{
+    auto ret = *this;
+    ret.AlignTo(p);
+    return ret;
+}
+
+double Point::PolarAngle() const
+{
+    return std::atan2(y, x);
+}
+
+double Point::SquaredNorm() const
+{
+    return x * x + y * y;
+}
+
 double Point::Norm() const
 {
-    return std::sqrt(x * x + y * y);
+    return std::sqrt(SquaredNorm());
 }
 
 Point Point::Normalized() const
@@ -154,6 +192,11 @@ Point operator-(Point lhs, const Point& rhs)
 {
     lhs -= rhs;
     return lhs;
+}
+
+std::ostream& operator<<(std::ostream& os, const Point& p)
+{
+    return os << '[' << p.x << ", " << p.y << ']';
 }
 
 }

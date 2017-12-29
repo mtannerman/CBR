@@ -49,7 +49,7 @@ Point Line2d::ClosestPoint(const Point& otherPoint) const
 double Line2d::DistanceFromPoint(const Point& otherPoint) const
 {
     const double tMin = ClosestTimeArg(otherPoint);
-    return (otherPoint - P - v * tMin).Norm();
+    return (otherPoint - P - (v * tMin)).Norm();
 }
 
 Point Line2d::Intersection(const Line2d& other) const

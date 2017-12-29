@@ -7,4 +7,5 @@
 namespace cbr
 {
     Line2d fit_line(const std::vector<Point>& points);
+    Line2d fit_line_gradientsearch(const std::vector<Point>& points);
 }

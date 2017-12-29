@@ -4,6 +4,7 @@
 #include <cstdint>
 #include "math_utils/functional.h"
 #include "common/logging.h"
+#include "common/exceptions.h"
 #include "common/viz2d.h"
 #include "common/config.h"
 
@@ -103,12 +104,17 @@ std::vector<Point> find_corner_cluster_centers(
 
     if (Config::GetInstance().GetBool("visualizeSquareFiltering")) {
         viz::Visualizer2D vizWindow("squareFiltering");
-
         for (const auto& c : cornerClusters) {
             vizWindow.AddCircle(c.mean.x, c.mean.y, 5, viz::Color::blue());
         }
 
         vizWindow.Spin();
+    }
+
+    for (const auto& c : clusterCenters) {
+        if (std::count_if(clusterCenters.begin(), clusterCenters.end(), [c](const Point& cc){ return cc.IsCloserThan(c, 3.); }) != 0) {
+
+        }
     }
 
 
@@ -139,9 +145,11 @@ void adjust_square_corners_to_closest_cluster(
 
 bool square_center_already_taken(
     const Point& center,
-     std::vector<Point>& squareCenters)
+     std::vector<Point>& squareCenters,
+     const double uniquenessDistanceThreshold)
 {
-    return std::find(squareCenters.begin(), squareCenters.end(), center) != squareCenters.end();
+    return std::find_if(squareCenters.begin(), squareCenters.end(), 
+        [uniquenessDistanceThreshold, &center](const Point& p){ return p.IsCloserThan(center, uniquenessDistanceThreshold); }) != squareCenters.end();
 }
 
 std::vector<Square> collect_unique_squares(
@@ -150,10 +158,12 @@ std::vector<Square> collect_unique_squares(
 {
     std::vector<Square> uniqueSquares;
     std::vector<Point> squareCenters;
+    const auto averageEdgeLength = fsum(squares, [](const Square& s){ return s.Circumference(); }) / double(squares.size()) / 4.;
+    const auto uniquenessDistanceThreshold = averageEdgeLength / 3.;
     for (auto square : squares) {
         adjust_square_corners_to_closest_cluster(cornerClusterCenters, square);
         const auto adjustedCenter = square.middle;
-        if (!square_center_already_taken(adjustedCenter, squareCenters)) {
+        if (!square_center_already_taken(adjustedCenter, squareCenters, uniquenessDistanceThreshold)) {
             uniqueSquares.push_back(square);
             squareCenters.push_back(adjustedCenter);
         }
