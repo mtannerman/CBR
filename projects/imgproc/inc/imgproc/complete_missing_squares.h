@@ -10,6 +10,6 @@ namespace cbr
 {
 
 std::array<Point, 2> find_dominant_edgedirections(const std::vector<Square>& squares);
-std::vector<Square> complete_missing_squares(const std::vector<Square>& squares);
+std::array<std::array<Square, 8>, 8> complete_missing_squares(const std::vector<Square>& squares);
 
 }

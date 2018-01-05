@@ -12,6 +12,7 @@ struct Line2d
     static Line2d FromTwoPointsOnLine(const Point& p1, const Point& p2);
     static Line2d FromPointAndDirection(const Point& P_, const Point& v_);
     static Line2d FromAngle(const double angle);
+    static Line2d FromPolarCoordinates(const double rho, const double phi);
     Point At(const double t) const;
     double ClosestTimeArg(const Point& otherPoint) const;
     Point ClosestPoint(const Point& otherPoint) const;

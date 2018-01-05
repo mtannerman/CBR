@@ -2,6 +2,8 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/calib3d.hpp"
+#include "common/viz2d.h"
+#include "math_utils/line.h"
 
 namespace cbr
 {
@@ -21,24 +23,21 @@ double angle(const cv::Point& pt1,
     return numerator / denominator;
 }
 
-std::pair<std::vector<Square>, std::vector<IncompleteSquare>> find_squares(const cv::Mat& image)
+std::vector<Square> find_squares(const cv::Mat& image)
 {
     std::vector<Square> squares;
-    std::vector<IncompleteSquare> incompleteSquares;
 	cv::Mat pyr, timg, gray0(image.size(), CV_8U), gray;
 	cv::pyrDown(image, pyr, cv::Size(image.cols/2, image.rows/2));
 	cv::pyrUp(pyr, timg, image.size());
 
 	std::vector<std::vector<cv::Point>> contours;
 
-
 	for( int c = 0; c < 3; c++ ) {
         const int ch[] = {c, 0};
         cv::mixChannels(&timg, 1, &gray0, 1, ch, 1);
 
         // try several threshold levels
-        for( int l = 0; l < N; l++ )
-        {
+        for( int l = 0; l < N; l++ ) {
             if( l == 0 ) {
                 cv::Canny(gray0, gray, 0, thresh, 5);
                 cv::dilate(gray, gray, cv::Mat(), cv::Point(-1,-1));
@@ -48,11 +47,9 @@ std::pair<std::vector<Square>, std::vector<IncompleteSquare>> find_squares(const
             }
 
             cv::findContours(gray, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
-
             std::vector<cv::Point> approx;
 
-            for ( const auto& contour : contours )
-            {
+            for ( const auto& contour : contours ) {
                 cv::approxPolyDP(cv::Mat(contour), approx, cv::arcLength(cv::Mat(contour), true)*0.02, true);
 
                 if ( approx.size() == 4 &&
@@ -60,8 +57,7 @@ std::pair<std::vector<Square>, std::vector<IncompleteSquare>> find_squares(const
                     cv::isContourConvex(cv::Mat(approx)) ) {
                     double maxCosine = 0;
 
-                    for ( int j = 2; j < 5; j++ )
-                    {
+                    for ( int j = 2; j < 5; j++ ) {
                         // find the maximum cosine of the angle between joint edges
                         const double cosine = std::fabs(angle(approx[j%4], approx[j-2], approx[j-1]));
                         maxCosine = std::max(maxCosine, cosine);
@@ -80,7 +76,7 @@ std::pair<std::vector<Square>, std::vector<IncompleteSquare>> find_squares(const
             }
         }
     }
-    return {squares, incompleteSquares};
+    return squares;
 }
 
 }   // cbr

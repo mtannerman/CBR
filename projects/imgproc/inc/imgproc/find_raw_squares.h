@@ -9,6 +9,6 @@
 namespace cbr
 {
 
-std::pair<std::vector<Square>, std::vector<IncompleteSquare>> find_squares(const cv::Mat& image);
+std::vector<Square> find_squares(const cv::Mat& image);
 
 }

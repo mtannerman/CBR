@@ -454,10 +454,37 @@ std::vector<std::pair<Line2d, BandDirection>> extrapolate_lines(
     return extrapolatedLines;
 }
 
-std::vector<Square> complete_missing_squares(
+bool is_board_complete(const std::vector<Point>& allMiddlePoints)
+{
+    return allMiddlePoints.size() == 64;
+}
+
+void sort_middle_lines(
+    std::array<std::vector<Line2d>, 2>& middleLines)
+{
+    for (const auto b : {BandDirection::HORIZONTAL, BandDirection::VERTICAL}) {
+        auto& lines = middleLines[int(b)];
+        std::sort(lines.begin(), lines.end(), [b](const Line2d& l1, const Line2d& l2) { 
+            return l1.P[int(b)] < l2.P[int(b)];
+        });
+    }
+}
+
+std::array<std::array<Square, 8>, 8> assemble_full_board(
+    const std::vector<Point>& middlePoints,
+    const std::array<std::vector<Line2d>, 2>& middleLines)
+{
+    std::array<std::array<Square, 8>, 8> ret;
+    ASSERT(is_board_complete(middlePoints), "");
+
+
+
+    return ret;
+}
+
+std::array<std::array<Square, 8>, 8> complete_missing_squares(
     const std::vector<Square>& squares)
 {
-    std::vector<Square> fullBoard;
     const auto dominantEdgeDirections = find_dominant_edgedirections(squares);
     const auto rotationMatrix = compute_rotation_matrix(dominantEdgeDirections);
     const auto rotatedSquares = compute_rotated_squares(squares, rotationMatrix);
@@ -473,12 +500,12 @@ std::vector<Square> complete_missing_squares(
         extend_middle_lines(middleLines, allMiddlePoints, averageEdgeLength);
     }
 
-
     const auto squaresWithOneMiddleLine = collect_squares_with_one_middle_line(rotatedSquares, middleLines, averageEdgeLength);
     const auto extrapolatedLines = extrapolate_lines(squaresWithOneMiddleLine, middleLines, averageEdgeLength);
     for (const auto& lineDir : extrapolatedLines) {
         middleLines[int(lineDir.second)].push_back(lineDir.first);
     }
+
     middleLineIntersections = compute_middle_points_from_middle_line_intersections(rotatedSquares, middleLines, averageEdgeLength);
     allMiddlePoints = collect_all_middle_points(rotatedSquares, middleLineIntersections, averageEdgeLength);
     extend_middle_lines(middleLines, allMiddlePoints, averageEdgeLength);
@@ -490,10 +517,8 @@ std::vector<Square> complete_missing_squares(
             extrapolatedLines);
     }
 
-
-
-
-    return fullBoard;
+    sort_middle_lines(middleLines);
+    return std::array<std::array<Square, 8>, 8>();
 }
 
 

@@ -28,6 +28,17 @@ Line2d Line2d::FromAngle(const double angle)
     return ret;
 }
 
+Line2d Line2d::FromPolarCoordinates(const double rho, const double theta)
+{
+    const auto a = std::cos(theta); 
+    const auto b = std::sin(theta);
+    const auto x = a * rho;
+    const auto y = b * rho;
+    const auto startPoint = Point(x - b, y + a);
+    const auto endPoint = Point(x + b, y - a);
+    return FromTwoPointsOnLine(startPoint, endPoint);
+}
+
 Point Line2d::At(const double t) const
 {
     return P + t * v;
