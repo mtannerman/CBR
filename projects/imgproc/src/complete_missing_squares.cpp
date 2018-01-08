@@ -471,13 +471,23 @@ void sort_middle_lines(
 }
 
 std::array<std::array<Square, 8>, 8> assemble_full_board(
-    const std::vector<Point>& middlePoints,
-    const std::array<std::vector<Line2d>, 2>& middleLines)
+    const std::vector<Square>& squares,
+    std::array<std::vector<Line2d>, 2>& middleLines)
 {
     std::array<std::array<Square, 8>, 8> ret;
-    ASSERT(is_board_complete(middlePoints), "");
+    sort_middle_lines(middleLines);
 
 
+    const auto& hLines = middleLines[int(BandDirection::HORIZONTAL)];
+    const auto& vLines = middleLines[int(BandDirection::VERTICAL)];
+    for (int row = 0; row < 8; ++row) {
+        for (int col = 0; col < 8; ++col) {
+            const auto intersection = hLines[row].Intersection(vLines[col]);
+            ret[row][col] = *std::min_element(squares.begin(), squares.end(), 
+                [&intersection](const Square& s1, const Square& s2) 
+                { return s1.Distance(intersection) < s2.Distance(intersection); });
+        }
+    }
 
     return ret;
 }
@@ -517,7 +527,8 @@ std::array<std::array<Square, 8>, 8> complete_missing_squares(
             extrapolatedLines);
     }
 
-    sort_middle_lines(middleLines);
+    // ASSERT(is_board_complete(middlePoints), "");
+
     return std::array<std::array<Square, 8>, 8>();
 }
 

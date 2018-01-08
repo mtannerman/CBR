@@ -1,10 +1,10 @@
 #pragma once
 
-#include <opencv2/core.hpp>
 #include <vector>
-#include <utility>
 #include "math_utils/square.h"
 #include "math_utils/point.h"
+
+namespace cv { class Mat; }
 
 namespace cbr
 {
