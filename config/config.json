@@ -9,6 +9,7 @@
     },
     "visualize":
     {
+        "rawSquares": true,
         "squareFiltering": false,
         "dominantEdgeDirections": false,
         "rotatedImage": false,

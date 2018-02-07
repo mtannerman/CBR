@@ -61,13 +61,13 @@ void Config::Impl::ReadTests(const rapidjson::Document& doc)
 
 void Config::Impl::ReadVisualizationOptions(const rapidjson::Document& doc)
 {
-    // LOG("reading visualization options:");
     if (doc.HasMember("visualize")) {
         const auto& visualizationArray = doc["visualize"];
         PARSE_BOOL_LINE(visualizationArray, "squareFiltering", mBools["visualizeSquareFiltering"]);
         PARSE_BOOL_LINE(visualizationArray, "dominantEdgeDirections", mBools["visualizeDominantEdgeDirections"]);
         PARSE_BOOL_LINE(visualizationArray, "rotatedImage", mBools["visualizeRotatedImage"]);
         PARSE_BOOL_LINE(visualizationArray, "bandMatches", mBools["visualizeBandMatches"]);
+        PARSE_BOOL_LINE(visualizationArray, "rawSquares", mBools["visualizeRawSquares"]);
     }
 }
 
