@@ -45,9 +45,7 @@ bool CbrCreateDirectory(const std::string& path)
 	if (!IsDirectoryOrFileExist(path)) {
 		std::string pathWithBackSlashes = path;
 		std::replace(pathWithBackSlashes.begin(), pathWithBackSlashes.end(), '/', '\\');
-		const auto command = STR("md " << pathWithBackSlashes);
-		std::cout << command << std::endl;
-		system(command.c_str());
+		system(STR("md " << pathWithBackSlashes).c_str());
 	}
 	/*const auto ret = CreateDirectoryA(path.c_str(), NULL);
 	std::cout << ret << std::endl;

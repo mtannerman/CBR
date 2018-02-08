@@ -508,11 +508,11 @@ std::array<std::array<Square, 8>, 8> complete_missing_squares(
     const auto rotationMatrix = compute_rotation_matrix(dominantEdgeDirections);
     const auto rotatedSquares = compute_rotated_squares(squares, rotationMatrix);
 
+	const double averageEdgeLength = fsum(rotatedSquares, [](const Square& s) { return s.Circumference(); }) / 4. / double(rotatedSquares.size());
 	const auto missingSquareCompletionStrategy = Config::GetInstance().GetString("missingSquareCompletionStrategy");
 	if (missingSquareCompletionStrategy == "default") {
 		const auto bandMatches = compute_band_matches(rotatedSquares);
 		auto middleLines = compute_middle_lines_from_band_matches(rotatedSquares, bandMatches);
-		const double averageEdgeLength = fsum(rotatedSquares, [](const Square& s) { return s.Circumference(); }) / 4. / double(rotatedSquares.size());
 		auto middleLineIntersections = compute_middle_points_from_middle_line_intersections(rotatedSquares, middleLines, averageEdgeLength);
 		auto allMiddlePoints = collect_all_middle_points(rotatedSquares, middleLineIntersections, averageEdgeLength);
 		extend_middle_lines(middleLines, allMiddlePoints, averageEdgeLength);
@@ -540,7 +540,8 @@ std::array<std::array<Square, 8>, 8> complete_missing_squares(
 		}
 	}
 	else if (missingSquareCompletionStrategy == "middlePointBased") {
-		THROW(UnImplementedFeature, "");
+		auto middlePoints = collect_all_middle_points(rotatedSquares, std::vector<Point>(), averageEdgeLength);
+
 	}
 	else {
 		THROW(BadProgramInput, "unknown missingSquareCompletionStrategy");

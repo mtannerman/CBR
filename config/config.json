@@ -19,6 +19,6 @@
 	"runtimeParams":
 	{
 		// supported: default (based on band matches), middlePointBased
-		"missingSquareCompletionStrategy": "default"
+		"missingSquareCompletionStrategy": "middlePointBased"
 	}
 }
