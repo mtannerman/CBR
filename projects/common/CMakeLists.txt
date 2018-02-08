@@ -18,6 +18,7 @@ SET(COMMON_INC
 
 SET(COMMON_SRC
     src/logging.cpp
+    src/debugbreak.cpp
     src/config.cpp
     src/viz2d.cpp
     src/cyclic_container.cpp

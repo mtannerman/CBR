@@ -10,7 +10,7 @@ namespace test {
     void RunTests()
     {
         if (Config::GetInstance().GetBool("testSimplexOptimizer")) {
-            ASSERT(run_simplex_optimizer_unittest(), "simplex optimizer unittest failed.");
+            TEST_ASSERT(run_simplex_optimizer_unittest(), "simplex optimizer unittest failed.");
         }
         
     }

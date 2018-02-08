@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS   // mvsc is whining about std::localtime security
 #include "common/time.h"
 #include <ctime>
 #include <iomanip>
@@ -10,10 +11,23 @@ namespace cbr
 std::string GetDateTimeStr()
 {
     auto t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
-    return STR(std::put_time(&tm, "%Y-%m-%d-%H-%M-%S"));
+    auto* tm_ = std::localtime(&t);
+    return STR(std::put_time(tm_, "%Y-%m-%d-%H-%M-%S"));
 }
-    
+
+// possible replacement of GetDateTimeStr with chrono:
+/*
+#include <chrono>
+
+string NowToString()
+{
+chrono::system_clock::time_point p = chrono::system_clock::now();
+time_t t = chrono::system_clock::to_time_t(p);
+char str[26];
+ctime_s(str, sizeof str, &t);
+return str;
+}
+*/    
 
 int64_t Time::ToSeconds() const
 {
@@ -51,16 +65,17 @@ void StopWatch::Restart()
 
 double StopWatch::ElapsedTime(const Unit unit)
 {
+	const auto timeDiff = std::chrono::system_clock::now() - start;
     switch (unit) {
         case Unit::MILLISEC:
-            return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count();
+            return double(std::chrono::duration_cast<std::chrono::milliseconds>(timeDiff).count());
         case Unit::NANOSEC:
-            return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - start).count();
+            return double(std::chrono::duration_cast<std::chrono::nanoseconds>(timeDiff).count());
         default:
-            return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start).count() / 1000.;
+            return double(std::chrono::duration_cast<std::chrono::milliseconds>(timeDiff).count()) / 1000.;
     }
 
-    THROW("unreachable code");
+    THROW(UnreachableCode, "");
 
     return 0.;
 }

@@ -9,7 +9,7 @@ namespace cbr
 
 double norm(const std::vector<double>& p1, const std::vector<double>& p2)
 {
-    ASSERT(p1.size() == p2.size(), "");
+    THROW_IF(p1.size() != p2.size(), SizeMismatch, "");
     double sum = 0;
     for (size_t i = 0; i < p1.size(); ++i) {
         sum += (p1[i] - p2[i]) * (p1[i] - p2[i]);
@@ -20,7 +20,7 @@ double norm(const std::vector<double>& p1, const std::vector<double>& p2)
 
 void Add(std::vector<double>& v1, const std::vector<double>& v2)
 {
-    ASSERT(v1.size() == v2.size(), "");
+	THROW_IF(v1.size() != v2.size(), SizeMismatch, "");
     for (size_t i = 0; i < v1.size(); ++i) {
         v1[i] += v2[i];
     }

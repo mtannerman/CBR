@@ -9,10 +9,16 @@
     },
     "visualize":
     {
-        "rawSquares": true,
+        "rawSquareDetection": false,
+		"allRawSquares": false,
         "squareFiltering": false,
         "dominantEdgeDirections": false,
         "rotatedImage": false,
         "bandMatches": true
-    }
+    },
+	"runtimeParams":
+	{
+		// supported: default (based on band matches), middlePointBased
+		"missingSquareCompletionStrategy": "default"
+	}
 }

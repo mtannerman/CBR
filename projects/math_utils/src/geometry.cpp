@@ -30,7 +30,7 @@ double arc_tangent(const double cosine, const double sine)
         return pi + std::atan(sine / cosine);
     }
 
-    ASSERT(false, "should not reach this");
+    THROW(UnreachableCode, "");
     return 0.;
 }
 
@@ -72,7 +72,7 @@ bool triangle_contains_point(
 
 double compute_rotation_angle(const Point& start, const Point& dest)
 {
-    ASSERT(!start.IsNull() && !dest.IsNull(), "");
+    THROW_IF(start.IsNull() || dest.IsNull(), BadFunctionInput, "");
     const auto s = start.Normalized();
     const auto d = dest.Normalized();
 

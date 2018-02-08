@@ -6,10 +6,10 @@ namespace cbr
 std::string ArchiveDirectory::Get(const std::string innerDirectoryName) const
 {
     if (innerDirectoryName == "") {
-        return STR("../process/" << mDateTimeStr);
+        return STR(GetWorkingDirectory() << "/process/" << mDateTimeStr);
     }
-    const auto fullDirName = STR("../process/" << mDateTimeStr << "/" << innerDirectoryName);
-    ASSERT(CreateDirectory(fullDirName), STR("creating directory failed:" << fullDirName));
+    const auto fullDirName = STR(GetWorkingDirectory() <<  "/process/" << mDateTimeStr << "/" << innerDirectoryName);
+    THROW_IF(!CbrCreateDirectory(fullDirName), FileOperationFailure, STR("creating directory failed:" << fullDirName));
     return fullDirName;
 }
 

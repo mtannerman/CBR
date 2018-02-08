@@ -16,7 +16,6 @@ struct Point
 
     Point() = default;
     Point(const double x, const double y);
-    Point(const double val);
     Point(const std::vector<double>& v);
 
     static Point UnitVector(const size_t i);

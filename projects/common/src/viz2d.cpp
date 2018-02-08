@@ -27,14 +27,16 @@ public:
 	{
         mImageIndices[imageName] += 1;
         const auto fileName = STR(mDirectoryName << "/" << imageName << '-' << (mImageIndices[imageName].Get() - 1) << ".png");
-        ASSERT(cv::imwrite(fileName, image), STR("couldnt write image to " << fileName));
-
+		LOG(GetWorkingDirectory());
+		THROW_IF(!IsDirectoryOrFileExist(mDirectoryName), FileOperationFailure, STR("dirName: " << mDirectoryName));
+        THROW_IF(!cv::imwrite(fileName, image), FileOperationFailure, STR("couldnt write image to " << fileName));
 	}
 private:
 	ImageArchiver() 
 	{
+		std::cout << "Creating ImageArchiver" << std::endl;
 		mDirectoryName = ArchivePath();
-		ASSERT(CreateDirectory(mDirectoryName), STR("Couldn't create directory: " << mDirectoryName));
+		THROW_IF(!CbrCreateDirectory(mDirectoryName), FileOperationFailure, STR("Couldn't create directory: " << mDirectoryName));
     }
     
     static std::string ArchivePath()

@@ -41,11 +41,11 @@ cv::Mat preprocess_image(const cv::Mat& image)
           for (int i = 0; i < 4; ++i) {
             const auto point = rotate(square.corners[i]);
             const auto nextPoint = rotate(square.corners[i < 3 ? (i + 1) : 0]);
-            cv::line(rotatedImage, cv::Point(point.x, point.y), cv::Point(nextPoint.x, nextPoint.y), cv::Scalar(255., 0., 0.), 2);
+            cv::line(rotatedImage, cv::Point(int(point.x), int(point.y)), cv::Point(int(nextPoint.x), int(nextPoint.y)), cv::Scalar(255., 0., 0.), 2);
           }
         }
-        cv::namedWindow("rotimg", 1);
-        cv::imshow("rotimg", rotatedImage);
+        cv::namedWindow("visualizeRotatedImage", 1);
+        cv::imshow("visualizeRotatedImage", rotatedImage);
         cv::waitKey();
     }
 

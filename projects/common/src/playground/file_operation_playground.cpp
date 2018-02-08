@@ -20,15 +20,19 @@ bool IsDirectory(const std::string& path)
     if (IsDirectoryOrFileExist(path)) {
         struct stat info;
         stat(path.c_str(), &info);
-        return info.st_mode & S_IFDIR;
+		auto ret = int(info.st_mode) & S_IFDIR;
+        return ret != 0;
     }
 
     return false;
 }
 
-bool CreateDirectory(const std::string& path) 
+bool CbrCreateDirectory(const std::string& path) 
 {
+#if defined(__GNUG__)
     return system(STR("mkdir -p " << path).c_str()) == 0;
+#endif
+	return false;
 }
 
 void StartFileOperationPlayground()
@@ -54,9 +58,9 @@ void StartFileOperationPlayground()
         // const int dirErr = system("mkdir -p ../process/template");
         // LOG(DESC(dirErr));
 
-        // LOG(DESC(CreateDirectory("../process/template2")));
-        // LOG(DESC(CreateDirectory("../process/template3")));
-        // LOG(DESC(CreateDirectory("../process/template2/template2p1")));
+        // LOG(DESC(CbrCreateDirectory("../process/template2")));
+        // LOG(DESC(CbrCreateDirectory("../process/template3")));
+        // LOG(DESC(CbrCreateDirectory("../process/template2/template2p1")));
         // LOG(DESC(__FUNCTION__));
         // LOG(DESC(__PRETTY_FUNCTION__));
         // auto l = [](){ LOG("in l()"); };

@@ -5,7 +5,7 @@
 
 #define STR(expression) (((::std::ostringstream *)&(::std::ostringstream() << "" << expression))->str())
 // #define LOG(msg) ::cbr::common_detail::Log(__PRETTY_FUNCTION__, STR(msg));
-#define CBR_FANCY_FUNCTION ::cbr::StripPrettyFunction(__PRETTY_FUNCTION__)
+#define CBR_FANCY_FUNCTION ::cbr::StripPrettyFunction(__FUNCTION__)
 #define LOG(msg) ::cbr::common_detail::Log(CBR_FANCY_FUNCTION, STR(msg));
 
 

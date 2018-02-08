@@ -9,13 +9,9 @@ Point::Point(const double x, const double y)
     : x(x), y(y)
 { }
 
-Point::Point(const double val)
-    : x(val), y(val)
-{ }
-
 Point::Point(const std::vector<double>& v)
 {
-    ASSERT(v.size() == 2, "");
+    THROW_IF(v.size() != 2, SizeMismatch, "");
     x = v[0];
     y = v[1]; 
 }
@@ -99,7 +95,7 @@ const double& Point::operator[](const size_t idx) const
         case 1:
             return y;
         default:
-            THROW(STR("index mismatch for point: idx = " << idx));
+            THROW(IndexError, STR("index mismatch for point: idx = " << idx));
     }
     // unreacheable code
     return x;
@@ -113,7 +109,7 @@ double& Point::operator[](const size_t idx)
         case 1:
             return y;
         default:
-            THROW(STR("index mismatch for point: idx = " << idx));
+            THROW(IndexError, STR("index mismatch for point: idx = " << idx));
     }
     // unreacheable code
     return x;

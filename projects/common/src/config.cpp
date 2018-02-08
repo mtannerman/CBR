@@ -9,7 +9,12 @@
 #define PARSE_BOOL_LINE(entry, propertyName, configVariable)\
     if (entry.HasMember(propertyName)) {\
         configVariable = entry[propertyName].GetBool();\
-    }\
+    }
+
+#define PARSE_STRING_LINE(entry, propertyName, configVariable)\
+    if (entry.HasMember(propertyName)) {\
+        configVariable = entry[propertyName].GetString();\
+    }
 
 namespace cbr
 {
@@ -18,11 +23,13 @@ struct Config::Impl
 {
     void ParseFile(std::string path);
     void ReadTests(const rapidjson::Document& doc);
-    void ReadVisualizationOptions(const rapidjson::Document& doc);
+	void ReadVisualizationOptions(const rapidjson::Document& doc);
+	void ReadRuntimeParameters(const rapidjson::Document& doc);
     void ReadImages(const rapidjson::Document& doc);
 
     std::map<std::string, bool> mBools;
-    std::map<std::string, std::vector<std::string>> mStringLists;
+	std::map<std::string, std::vector<std::string>> mStringLists;
+	std::map<std::string, std::string> mStrings;
 };
 
 
@@ -34,7 +41,7 @@ bool is_line_commented(const std::string& line)
 std::string read_json_document(const std::string& fileName)
 {
     std::ifstream s(fileName);
-    ASSERT(s.is_open(), STR("Cannot open config file: " << fileName));
+    THROW_IF(!s.is_open(), FileOperationFailure, STR("Cannot open config file: " << fileName));
     std::string line;
     std::string ret;
     while (std::getline(s, line)) {
@@ -67,8 +74,17 @@ void Config::Impl::ReadVisualizationOptions(const rapidjson::Document& doc)
         PARSE_BOOL_LINE(visualizationArray, "dominantEdgeDirections", mBools["visualizeDominantEdgeDirections"]);
         PARSE_BOOL_LINE(visualizationArray, "rotatedImage", mBools["visualizeRotatedImage"]);
         PARSE_BOOL_LINE(visualizationArray, "bandMatches", mBools["visualizeBandMatches"]);
-        PARSE_BOOL_LINE(visualizationArray, "rawSquares", mBools["visualizeRawSquares"]);
+		PARSE_BOOL_LINE(visualizationArray, "rawSquareDetection", mBools["visualizeRawSquareDetection"]);
+		PARSE_BOOL_LINE(visualizationArray, "allRawSquares", mBools["visualizeAllRawSquares"]);
     }
+}
+
+void Config::Impl::ReadRuntimeParameters(const rapidjson::Document& doc)
+{
+	if (doc.HasMember("runtimeParams")) {
+		const auto& runtimeParamArray = doc["runtimeParams"];
+		PARSE_STRING_LINE(runtimeParamArray, "missingSquareCompletionStrategy", mStrings["missingSquareCompletionStrategy"]);
+	}
 }
 
 void Config::Impl::ReadImages(const rapidjson::Document& doc)
@@ -97,9 +113,10 @@ void Config::Impl::ParseFile(std::string path)
     rapidjson::Document doc;
     // LOG("Parsing config file.");
     doc.Parse(configFileContent.c_str());
-    ASSERT(doc.IsObject(), "invalid config file");
+    THROW_IF(!doc.IsObject(), BadProgramInput, "invalid config file");
     ReadTests(doc);
     ReadVisualizationOptions(doc);
+	ReadRuntimeParameters(doc);
     ReadImages(doc);
     // LOG("Parsing finished.");
 }
@@ -120,13 +137,18 @@ template<typename T>
 const T& GetVariable(const std::map<std::string, T>& container, const std::string& variableName)
 {
     const auto foundVariable = container.find(variableName);
-    ASSERT(foundVariable != container.end(), "Can't find variable " + variableName);
+    THROW_IF(foundVariable == container.end(), BadProgramInput, "Can't find variable " + variableName);
     return foundVariable->second;
 } 
 
 bool Config::GetBool(const std::string& variableName)
 {
     return GetVariable<bool>(mImpl->mBools, variableName);
+}
+
+std::string Config::GetString(const std::string & variableName)
+{
+	return GetVariable<std::string>(mImpl->mStrings, variableName);
 }
 
 std::vector<std::string> Config::GetStringList(const std::string& variableName)

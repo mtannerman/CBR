@@ -12,7 +12,7 @@ template <typename Coll>
 typename Coll::value_type fsum(const Coll& collection) {
     using T = typename Coll::value_type;
 
-    T sum(0);
+	T sum{};
     for (auto it = begin(collection); it != end(collection); ++it) {
         sum += *it;
     }
@@ -24,7 +24,7 @@ template <typename Coll, typename F>
 decltype(auto) fsum(const Coll& collection, F f) {
     using T = typename std::result_of<F(typename Coll::value_type)>::type;
 
-    T sum(0);
+	T sum{};
     for (auto it = begin(collection); it != end(collection); ++it) {
         sum += f(*it);
     }

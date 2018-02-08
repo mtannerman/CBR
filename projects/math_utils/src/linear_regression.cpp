@@ -104,7 +104,7 @@ void LineFitterWithGradientSearch::UpdateGradients(const std::vector<Point>& poi
     gradv.ZeroOut();
 
     for (size_t i = 0; i < points.size(); ++i) {
-        const auto error = ComputeError(i);
+        const auto error = ComputeError(points[i]);
         const auto v_over_v_squared = line.v / line.v.SquaredNorm();
         for (const size_t alpha : {0, 1}) {
             gradP[alpha] += error.Dot(Point::UnitVector(alpha) + line.v[alpha] * v_over_v_squared);

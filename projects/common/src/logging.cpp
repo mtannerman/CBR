@@ -33,8 +33,10 @@ private:
 	LogArchiver() 
 	{
 		const auto path = LogArchivePath();
-		ASSERT(CreateDirectory(path), STR("Couldn't create directory: " << path));
+		std::cout << "Creating LogArchiver" << std::endl;
+		THROW_IF(!CbrCreateDirectory(path), FileOperationFailure, STR("Couldn't create directory: " << path));
 		ofs.open(STR(path << "/log.txt"));
+		THROW_IF(!ofs.is_open(), FileOperationFailure, "Couldn't open log stream");
 	}
 	std::ofstream ofs;
 };
@@ -67,10 +69,11 @@ std::string StripPrettyFunction(std::string prettyFunction)
 
 namespace common_detail
 {
-void Log(const std::string & function, const std::string & message)
+void Log(const std::string& function, const std::string& message)
 {
-	std::cout << "[" << function << "]  " << message << std::endl;
-	LogArchiver::GetInstance().Add(STR("[" << function << "]  " << message << std::endl));
+	const auto full = STR("[" << function << "]  " << message << std::endl);
+	std::cout << full;
+	LogArchiver::GetInstance().Add(full);
 }
 
 
