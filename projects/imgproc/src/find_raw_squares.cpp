@@ -105,7 +105,7 @@ void detect_and_add_new_squares(cv::Mat& preprocessedGrayImage, std::vector<cbr:
 void detect_and_add_new_squares_from_binary_thresholded_image(cv::Mat &grayChannel, std::vector<cbr::Square>& squares, const int iChannel)
 {
 	cv::Mat preprocessedGrayImage;
-	static const std::vector<double> binaryThresholdLevels{120., 140., 160.};
+	static const std::vector<double> binaryThresholdLevels{80., 120., 140., 200.};
 	for (const double binThres : binaryThresholdLevels) {
 		preprocessedGrayImage = grayChannel >= binThres;
 		detect_and_add_new_squares(preprocessedGrayImage, squares, iChannel);
@@ -143,15 +143,15 @@ std::vector<Square> find_squares(const cv::Mat& image)
 {
     constexpr int N = 10;
     std::vector<Square> squares;
-	cv::Mat pyr, timg, grayChannel(image.size(), CV_8U), preprocessedGrayImage;
-	cv::pyrDown(image, pyr, cv::Size(image.cols/2, image.rows/2));
-	cv::pyrUp(pyr, timg, image.size());
+	cv::Mat blurredImage, grayChannel(image.size(), CV_8U), preprocessedGrayImage;
+	cv::pyrDown(image, blurredImage, cv::Size(image.cols/2, image.rows/2));
+	cv::pyrUp(blurredImage, blurredImage, image.size());
 
 
 	for (const int iChannel : {0, 1, 2}) {
         const auto channelFromToArray = std::array<int, 2>{iChannel, 0};
         constexpr int numberOfMatricesInImages = 1;
-        cv::mixChannels(&timg, numberOfMatricesInImages, &grayChannel, numberOfMatricesInImages, channelFromToArray.data(), 1);
+        cv::mixChannels(&blurredImage, numberOfMatricesInImages, &grayChannel, numberOfMatricesInImages, channelFromToArray.data(), 1);
 
 		detect_and_add_new_squares_from_edge_detected_image(grayChannel, squares, iChannel);
 		detect_and_add_new_squares_from_binary_thresholded_image(grayChannel, squares, iChannel);

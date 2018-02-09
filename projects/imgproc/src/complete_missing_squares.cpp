@@ -540,8 +540,18 @@ std::array<std::array<Square, 8>, 8> complete_missing_squares(
 		}
 	}
 	else if (missingSquareCompletionStrategy == "middlePointBased") {
-		auto middlePoints = collect_all_middle_points(rotatedSquares, std::vector<Point>(), averageEdgeLength);
-
+		// auto middlePoints = collect_all_middle_points(rotatedSquares, std::vector<Point>(), averageEdgeLength);
+        viz::Visualizer2D vizWindow("middlePointBased");
+        for (const auto& s : rotatedSquares) {
+            vizWindow.AddCircle(s.middle.x, s.middle.y, 4, viz::Color::red());
+            for (const auto& c : s.corners) {
+                vizWindow.AddCircle(c.x, c.y, 3, viz::Color::blue());
+            }
+            for (size_t i = 0; i < 4; ++i) {
+                vizWindow.AddLine(s[i].x, s[i].y, s[(i + 1) % 4].x, s[(i + 1) % 4].y, viz::Color::blue());
+            }
+        }
+        vizWindow.Spin();
 	}
 	else {
 		THROW(BadProgramInput, "unknown missingSquareCompletionStrategy");
