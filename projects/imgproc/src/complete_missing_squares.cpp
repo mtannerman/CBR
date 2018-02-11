@@ -14,7 +14,7 @@
 #include "math_utils/functional.h"
 #include <utility>
 #include "math_utils/linear_regression.h"
-#include <random>
+
 #include "math_utils/matrix.h"
 
 namespace cbr

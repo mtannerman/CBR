@@ -2,6 +2,7 @@
 #include <array>
 
 #include <cmath>
+#include "math_utils/matrix.h"
 
 namespace cbr
 {
@@ -42,7 +43,25 @@ struct ChessBoard3D
             const Point3& upperRightCorner,
             const double orthogonalAngle)
         {
-            
+            const auto v = (upperRightCorner - upperLeftCorner).Normalized();
+
+            const double phi = std::atan2(v.y, v.x);            
+            const double theta = std::atan2(v.z, std::sqrt(v.x*v.x + v.y*v.y));
+
+            const double cosTheta = std::cos(theta);
+            const double sinTheta = std::sin(theta);
+            const double cosPhi = std::cos(phi);
+            const double sinPhi = std::sin(phi);
+
+            const auto rotation = Matrix3(
+                cosTheta*cosPhi, cosTheta*sinPhi,-sinPhi,
+                -sinPhi,cosPhi,0,
+                cosPhi*sinTheta,sinPhi*sinTheta,cosTheta);
+
+            const auto columnUnitVector = 
+                rotation.Inverse() * Point3(0., std::cos(orthogonalAngle), std::sin(orthogonalAngle));
+
+            return upperLeftCorner + columnUnitVector * upperLeftCorner.Distance(upperRightCorner);          
         }
 
         Helper(const std::array<double, int(Params::COUNT)>& parameters) {
@@ -53,14 +72,10 @@ struct ChessBoard3D
 
             const auto orthogonalAngle = parameters[size_t(Params::ORTHOGONAL_ANGLE)];
 
-            // const auto planeNormal = Point3(
-            //     std::cos(theta) * std::cos(phi),
-            //     std::cos(theta) * std::sin(phi),
-            //     std::sin(theta)).Normalized();
+            const auto lowerLeftCorner = ComputeLowerLeftCorner(upperLeftCorner, upperRightCorner, orthogonalAngle);
+            colVec = lowerLeftCorner - upperLeftCorner;
 
-            // colVec = rowVec.Cross(planeNormal);
-
-            // upperLeftMiddlePoint = upperLeftPoint + (rowVec + colVec) / 8.;
+            upperLeftMiddlePoint = upperLeftCorner + (rowVec + colVec) / 8.;
         }
 
         Point3 upperLeftMiddlePoint;
@@ -71,6 +86,18 @@ struct ChessBoard3D
             return upperLeftMiddlePoint + double(rowIndex) * rowVec + double(colIndex) * colVec;
         }
 
+        struct PointUsedBoolPair
+        {
+            PointUsedBoolPair() = default;
+            PointUsedBoolPair(const Point& p, const bool usedAlready)
+                : p(p), usedAlready(usedAlready) 
+            {}
+
+            Point p;
+            bool usedAlready = false;
+
+        };
+
         Point MiddlePointProjection(const int rowIndex, const int colIndex) const {
             const auto p = MiddlePointPosition(rowIndex, colIndex);
 
@@ -80,13 +107,13 @@ struct ChessBoard3D
 
     std::array<double, int(Params::COUNT)> params;
 
-    std::array<std::array<Point, 8>, 8> ProjectToPlane() const
+    std::array<std::array<Helper::PointUsedBoolPair, 8>, 8> ProjectToPlane() const
     {
         const Helper helper(params);
-        std::array<std::array<Point, 8>, 8> ret;
+        std::array<std::array<Helper::PointUsedBoolPair, 8>, 8> ret;
         for (int row = 0; row < 8; ++row) {
             for (int col = 0; col < 8; ++col) {
-                ret[row][col] = helper.MiddlePointProjection(row, col);
+                ret[row][col].p = helper.MiddlePointProjection(row, col);
             }
         }
 
@@ -95,7 +122,12 @@ struct ChessBoard3D
 
     double DistanceFromMiddlePoints(const std::vector<Point>& middlePoints)
     {
-        // const auto 
+        const auto projectedBoard = ProjectToPlane();
+        for (const auto& middle : middlePoints) {
+            // need to find closest projection
+            static_assert(false, "continue here");
+        }
+        return 0.0;
     }
 
 };
