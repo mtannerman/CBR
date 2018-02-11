@@ -5,7 +5,8 @@
     ],
     "tests":
     {
-        "simplexOptimizer": false
+        "simplexOptimizer": false,
+        "matrix": true
     },
     "visualize":
     {

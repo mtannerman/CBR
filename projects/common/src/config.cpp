@@ -61,7 +61,7 @@ void Config::Impl::ReadTests(const rapidjson::Document& doc)
     // LOG("reading tests:");
     if (doc.HasMember("tests")) {
         const auto& testArray = doc["tests"];
-        PARSE_BOOL_LINE(testArray, "squareOverlap", mBools["testImgProcSquareOverlap"]);
+        PARSE_BOOL_LINE(testArray, "matrix", mBools["testMatrixLib"]);
         PARSE_BOOL_LINE(testArray, "simplexOptimizer", mBools["testSimplexOptimizer"]);
     }
 }

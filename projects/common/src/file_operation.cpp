@@ -74,7 +74,6 @@ std::string GetWorkingDirectory()
 #endif
 	const auto buildDirectoryPosition = buildDirectory.find("/build");
     const auto withoutBuildAtTheEnd = buildDirectory.substr(0, buildDirectoryPosition);
-	std::cout << "need to test this with gcc: " << DESC(withoutBuildAtTheEnd) << std::endl;
     return withoutBuildAtTheEnd;
 }
 

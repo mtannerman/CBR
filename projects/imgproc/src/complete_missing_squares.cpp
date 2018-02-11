@@ -15,6 +15,7 @@
 #include <utility>
 #include "math_utils/linear_regression.h"
 #include <random>
+#include "math_utils/matrix.h"
 
 namespace cbr
 {
@@ -263,32 +264,27 @@ void visualize_square_completion(
     vizWindow.Spin();
 }
 
-std::array<std::array<double, 2>, 2> compute_rotation_matrix(
+Matrix compute_rotation_matrix(
     const std::array<Point, 2>& dominantEdgeDirections)
 {
     const auto& f1 = dominantEdgeDirections[0];
 	const auto& f2 = dominantEdgeDirections[1];
-    std::array<std::array<double, 2>, 2> ret;
-    ret[0][0] = f1.x;
-    ret[0][1] = f1.y;
-    ret[1][0] = f2.x;
-    ret[1][1] = f2.y;
-    return ret;
+
+    return Matrix(
+        f1.x, f1.y,
+        f2.x, f2.y);
 }
 
 std::vector<Square> compute_rotated_squares(
     const std::vector<Square>& squares,
-    const std::array<std::array<double, 2>, 2>& rotationMatrix)
+    const Matrix& rotation)
 {
-    const auto& R = rotationMatrix;
-    const auto rotate = [&R](const Point& p){ return Point(R[0][0] * p.x + R[0][1] * p.y, R[1][0] * p.x + R[1][1] * p.y); };
-
     auto ret = std::vector<Square>(squares.size(), Square());
     for (size_t iSquare = 0; iSquare < squares.size(); ++iSquare) {
         for (size_t iCorner = 0; iCorner < 4; ++iCorner) {
-            ret[iSquare][iCorner] = rotate(squares[iSquare][iCorner]);
+            ret[iSquare][iCorner] = rotation * squares[iSquare][iCorner];
         }
-        ret[iSquare].middle = rotate(squares[iSquare].middle);
+        ret[iSquare].middle = rotation * squares[iSquare].middle;
     }
 
     return ret;
