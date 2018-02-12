@@ -19,7 +19,7 @@ const Point& Square::operator[](const size_t idx) const
 
 void Square::Recenter()
 {
-    middle = fsum(corners) / 4.;
+    middle = f::sum(corners) / 4.;
 }
 
 // Square::Square(const std::vector<cv::Point>& arg_corners)

@@ -61,7 +61,7 @@ struct KMeansComputer::Impl
 void KMeansComputer::Impl::AssignLabels(
     const std::vector<std::vector<double>>& points)
 {
-    FillCollection(numberOfLabelOccurrence, 0);
+    f::FillCollection(numberOfLabelOccurrence, 0);
     for (size_t i = 0; i < points.size(); ++i) {
         const auto closest = std::min_element(centers.begin(), centers.end(),
         [i, &points](const std::vector<double>& c1, const std::vector<double>& c2)
@@ -80,7 +80,7 @@ void KMeansComputer::Impl::AdjustCenters(
 {
     for (size_t iCenter = 0; iCenter < centers.size(); ++iCenter) {
         if (numberOfLabelOccurrence[iCenter] != 0) {
-            FillCollection(centers[iCenter], 0.0); 
+            f::FillCollection(centers[iCenter], 0.0); 
         }
     }
 

@@ -5,11 +5,13 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include "common/exceptions.h"
 
 namespace cbr {
+namespace f {
 // TODO: second template: plus function with default std::plus
 template <typename Coll>
-typename Coll::value_type fsum(const Coll& collection) {
+typename Coll::value_type sum(const Coll& collection) {
     using T = typename Coll::value_type;
 
 	T sum{};
@@ -21,7 +23,7 @@ typename Coll::value_type fsum(const Coll& collection) {
 }
 
 template <typename Coll, typename F>
-decltype(auto) fsum(const Coll& collection, F f) {
+decltype(auto) sum(const Coll& collection, F f) {
     using T = typename std::result_of<F(typename Coll::value_type)>::type;
 
 	T sum{};
@@ -33,7 +35,7 @@ decltype(auto) fsum(const Coll& collection, F f) {
 }
 
 template <typename It, typename F, typename P>
-decltype(auto) fmap_if(const It& itBegin, const It& itEnd, const F& mapper,
+decltype(auto) map_if(const It& itBegin, const It& itEnd, const F& mapper,
                        const P& predicate) {
     using T = typename std::result_of<F(
         typename std::iterator_traits<It>::value_type)>::type;
@@ -55,13 +57,13 @@ decltype(auto) fmap_if(const It& itBegin, const It& itEnd, const F& mapper,
 }
 
 template <typename C, typename F, typename P>
-decltype(auto) fmap_if(const C& collection, const F& mapper,
+decltype(auto) map_if(const C& collection, const F& mapper,
                        const P& predicate) {
-    return fmap_if(begin(collection), end(collection), mapper, predicate);
+    return map_if(begin(collection), end(collection), mapper, predicate);
 }
 
 template <typename C, typename Pred>
-void ffilter(C& collection, const Pred& predicate) {
+void filter(C& collection, const Pred& predicate) {
     const auto& size = collection.size();
     if (size == 0) {
         return;
@@ -77,7 +79,7 @@ void ffilter(C& collection, const Pred& predicate) {
 }
 
 template <typename It, typename F>
-decltype(auto) fmap(const It& itBegin, const It& itEnd, const F& function) {
+decltype(auto) map(const It& itBegin, const It& itEnd, const F& function) {
     using T = typename std::result_of<F(
         typename std::iterator_traits<It>::value_type)>::type;
 
@@ -96,8 +98,8 @@ decltype(auto) fmap(const It& itBegin, const It& itEnd, const F& function) {
 }
 
 template <typename C, typename F>
-decltype(auto) fmap(const C& collection, const F& function) {
-    return fmap(begin(collection), end(collection), function);
+decltype(auto) map(const C& collection, const F& function) {
+    return map(begin(collection), end(collection), function);
 }
 
 template <typename C, typename F>
@@ -165,7 +167,7 @@ decltype(auto) difference_vector(const C& collection, const F& difference) {
 }
 
 template <typename C1, typename C2, typename F>
-decltype(auto) fcombine(const C1& collection1, const C2& collection2,
+decltype(auto) combine(const C1& collection1, const C2& collection2,
                         const F& f) {
     using T = typename std::result_of<F(typename C1::value_type,
                                         typename C2::value_type)>::type;
@@ -173,9 +175,8 @@ decltype(auto) fcombine(const C1& collection1, const C2& collection2,
     const size_t size1 = collection1.size();
     const size_t size2 = collection2.size();
 
-    if (size1 != size2) {
-        throw std::runtime_error("size mismatch");
-    }
+
+	THROW_IF(size1 != size2, SizeMismatch, "");
 
     std::vector<T> combined;
     combined.reserve(size1);
@@ -193,26 +194,48 @@ decltype(auto) fcombine(const C1& collection1, const C2& collection2,
     return combined;
 }
 
-template <typename Collection, typename ToStringF>
-std::string collection_to_string(const Collection& coll,
-                                 const ToStringF toString,
-                                 const std::string delim = ", ",
-                                 const std::string leftBoundary = "",
-                                 const std::string rightBoundary = "") {
-    if (size(coll) == 0) {
-        return "";
-    }
+template<typename Collection>
+std::string collection_to_string(
+	const Collection& coll, 
+	const std::string delim = ", ", 
+	const std::string leftBoundary = "", 
+	const std::string rightBoundary = "")
+{
+	if (size(coll) == 0) {
+		return "";
+	}
 
-    std::stringstream ss;
-    ss << leftBoundary;
-    for (auto it = begin(coll); it != prev(end(coll)); ++it) {
-        ss << toString(*it) << delim;
-    }
-    ss << toString(*prev(end(coll))) << rightBoundary;
+	std::stringstream ss;
+	ss << leftBoundary;
+	for (auto it = begin(coll); it != prev(end(coll)); ++it) {
+		ss << *it << delim;
+	}
+	ss << *prev(end(coll)) << rightBoundary;
 
-    return ss.str();
+	return ss.str();
 }
 
+template<typename Collection, typename ToStringF>
+std::string collection_to_string_f(
+	const Collection& coll, 
+	const ToStringF toString, 
+	const std::string delim = ", ", 
+	const std::string leftBoundary = "", 
+	const std::string rightBoundary = "")
+{
+	if (size(coll) == 0) {
+		return "";
+	}
+
+	std::stringstream ss;
+	ss << leftBoundary;
+	for (auto it = begin(coll); it != prev(end(coll)); ++it) {
+		ss << toString(*it) << delim;
+	}
+	ss << toString(*prev(end(coll))) << rightBoundary;
+
+	return ss.str();
+}
 template <typename Collection>
 void FillCollection(Collection& coll, const typename Collection::value_type& value)
 {
@@ -221,4 +244,5 @@ void FillCollection(Collection& coll, const typename Collection::value_type& val
     }
 }
 
-}// cbr
+}   // namespace f
+}   // namespace cbr

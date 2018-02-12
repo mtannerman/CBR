@@ -30,7 +30,7 @@ bool is_square_too_large_compared_to_image(
 double compute_average_square_area(
     const std::vector<Square>& squares)
 {
-    const auto squareAreaSum = fsum(squares, [=](const Square& square){ return approximate_square_area(square); });
+    const auto squareAreaSum = f::sum(squares, [=](const Square& square){ return approximate_square_area(square); });
     return squareAreaSum / double(squares.size());
 }
 
@@ -38,7 +38,7 @@ std::pair<double, double> compute_square_area_bounds(
     const std::vector<Square>& squares)
 {
     // ?? is lambda needed?
-    const auto squareAreaSum = fsum(squares, [=](const Square& square){ return approximate_square_area(square); });
+    const auto squareAreaSum = f::sum(squares, [=](const Square& square){ return approximate_square_area(square); });
     const auto averageSquareArea = squareAreaSum / double(squares.size());
     return {averageSquareArea / 4.0, 4.0 * averageSquareArea};
 }

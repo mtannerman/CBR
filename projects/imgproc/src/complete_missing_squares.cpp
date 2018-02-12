@@ -1,18 +1,12 @@
 #include "math_utils/square.h"
-#include "imgproc/find_edge_squares.h"
-#include <array>
 #include "common/exceptions.h"
-#include <cmath>
-#include <map>
 #include <set>
 #include "math_utils/kmeans.h"
 #include "common/viz2d.h"
 #include "common/config.h"
 #include "opencv2/highgui.hpp"
 #include "math_utils/geometry.h"
-#include "math_utils/line.h"
 #include "math_utils/functional.h"
-#include <utility>
 #include "math_utils/linear_regression.h"
 
 #include "math_utils/matrix.h"
@@ -342,7 +336,7 @@ std::vector<Point> compute_middle_points_from_middle_line_intersections(
     const double averageEdgeLength)
 {
     std::vector<Point> middleLineIntersections;
-    const Point approximateBoardMiddle = fsum(squares, [](const Square& s){ return s.middle; }) / double(squares.size());
+    const Point approximateBoardMiddle = f::sum(squares, [](const Square& s){ return s.middle; }) / double(squares.size());
     
     const double maxDistance = 10.0 * averageEdgeLength;
     for (const auto& hLine : middleLines[int(Direction::HORIZONTAL)]) {
@@ -504,7 +498,7 @@ std::array<std::array<Square, 8>, 8> complete_missing_squares(
     const auto rotationMatrix = compute_rotation_matrix(dominantEdgeDirections);
     const auto rotatedSquares = compute_rotated_squares(squares, rotationMatrix);
 
-	const double averageEdgeLength = fsum(rotatedSquares, [](const Square& s) { return s.Circumference(); }) / 4. / double(rotatedSquares.size());
+	const double averageEdgeLength = f::sum(rotatedSquares, [](const Square& s) { return s.Circumference(); }) / 4. / double(rotatedSquares.size());
 	const auto missingSquareCompletionStrategy = Config::GetInstance().GetString("missingSquareCompletionStrategy");
 	if (missingSquareCompletionStrategy == "default") {
 		const auto bandMatches = compute_band_matches(rotatedSquares);

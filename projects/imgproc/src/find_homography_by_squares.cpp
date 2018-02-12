@@ -1,8 +1,7 @@
 #include "imgproc/find_homography_by_squares.h"
-#include <array>
 
-#include <cmath>
 #include "math_utils/matrix.h"
+#include "common/exceptions.h"
 
 namespace cbr
 {
@@ -120,12 +119,33 @@ struct ChessBoard3D
         return ret;
     }
 
-    double DistanceFromMiddlePoints(const std::vector<Point>& middlePoints)
+	double FindClosestProjectionToMiddlePointDistance(const Point& middle,
+		const std::vector<Helper::PointUsedBoolPair>& projectedBoard) const
+	{
+		auto closestProjection = projectedBoard.end();
+		for (auto it = projectedBoard.begin(); it != projectedBoard.end(); ++it) {
+			if (!it->usedAlready) {
+				closestProjection = it;
+				break;
+			}
+		}
+
+		ASSERT(closestProjection != projectedBoard.end(), "");
+
+		for (auto it = std::next(closestProjection); it != projectedBoard.end(); ++it) {
+
+		}
+
+		//double ret;
+		//for (const auto&)
+	}
+
+    double DistanceFromMiddlePoints(const std::vector<Point>& middlePoints) const
     {
         const auto projectedBoard = ProjectToPlane();
         for (const auto& middle : middlePoints) {
-            // need to find closest projection
-            static_assert(false, "continue here");
+            //// need to find closest projection
+            //static_assert(false, "continue here");
         }
         return 0.0;
     }

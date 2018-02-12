@@ -66,7 +66,7 @@ std::vector<Point> squares_to_corners(const std::vector<Square>& squares)
 
 double compute_square_edge_length_average(const std::vector<Square>& squares)
 {
-    const double edgeLengthSum = fsum(squares, [](const Square& s) { return s.Circumference(); });
+    const double edgeLengthSum = f::sum(squares, [](const Square& s) { return s.Circumference(); });
     return edgeLengthSum / double(squares.size()) / 4.0;
 }
 
@@ -158,7 +158,7 @@ std::vector<Square> collect_unique_squares(
 {
     std::vector<Square> uniqueSquares;
     std::vector<Point> squareCenters;
-    const auto averageEdgeLength = fsum(squares, [](const Square& s){ return s.Circumference(); }) / double(squares.size()) / 4.;
+    const auto averageEdgeLength = f::sum(squares, [](const Square& s){ return s.Circumference(); }) / double(squares.size()) / 4.;
     const auto uniquenessDistanceThreshold = averageEdgeLength / 3.;
     for (auto square : squares) {
         adjust_square_corners_to_closest_cluster(cornerClusterCenters, square);
