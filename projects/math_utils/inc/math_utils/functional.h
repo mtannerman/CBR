@@ -111,7 +111,7 @@ decltype(auto) average_difference(const C& collection, const F& difference) {
         return T(0);
     }
 
-    T sum(0);
+    T sum{};
 
     auto prev = begin(collection);
     for (auto it = next(begin(collection)); it != end(collection); ++it) {
@@ -130,7 +130,7 @@ decltype(auto) difference_sum(const C& collection, const F& difference) {
     const auto& size = collection.size();
 
     if (size < 2) {
-        return T(0);
+        return T{};
     }
 
     T sum(0);

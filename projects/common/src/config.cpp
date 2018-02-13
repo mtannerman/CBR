@@ -63,6 +63,7 @@ void Config::Impl::ReadTests(const rapidjson::Document& doc)
         const auto& testArray = doc["tests"];
         PARSE_BOOL_LINE(testArray, "matrix", mBools["testMatrixLib"]);
         PARSE_BOOL_LINE(testArray, "simplexOptimizer", mBools["testSimplexOptimizer"]);
+        PARSE_BOOL_LINE(testArray, "findChessBoard3D", mBools["testFindChessBoard3D"]);
     }
 }
 

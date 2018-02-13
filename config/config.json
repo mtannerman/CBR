@@ -6,7 +6,8 @@
     "tests":
     {
         "simplexOptimizer": false,
-        "matrix": true
+        "matrix": false,
+        "findChessBoard3D": true
     },
     "visualize":
     {

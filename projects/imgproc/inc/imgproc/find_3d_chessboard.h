@@ -2,12 +2,18 @@
 
 #include <array>
 #include "math_utils/point.h"
+#include "math_utils/matrix.h"
 
 namespace cbr
 {
 
+struct ChessBoard3D;
+
 struct VectorizedChessBoard3D
 {
+	VectorizedChessBoard3D() = default;
+	VectorizedChessBoard3D(const ChessBoard3D& cb);
+
 	enum class Params {
 		ORTHOGONAL_ANGLE = 0,
 		UPPER_LEFT_CORNER_X = 1,
@@ -22,26 +28,29 @@ struct VectorizedChessBoard3D
 	typedef std::array<double, int(Params::COUNT)> ParamArray;
 
 	std::array<double, int(Params::COUNT)> params;
-
-	
 };
 
-static Point3 GetUpperLeftCorner(
+Matrix3 ComputeRotationToXUnitVector(const Point3& p);
+
+Point3 GetUpperLeftCorner(
 	const VectorizedChessBoard3D::ParamArray& pa);
 
-static Point3 GetUpperRightCorner(
+Point3 GetUpperRightCorner(
 	const VectorizedChessBoard3D::ParamArray& pa);
 
-static double GetOrthogonalAngle(
+double GetOrthogonalAngle(
 	const VectorizedChessBoard3D::ParamArray& pa);
 
-static Point3 ComputeLowerLeftCorner(const Point3& upperLeftCorner,
+Point3 ComputeLowerLeftCorner(const Point3& upperLeftCorner,
 	const Point3& upperRightCorner,
 	const double orthogonalAngle);
 
 struct ChessBoard3D
 {
 	ChessBoard3D(const VectorizedChessBoard3D& vectorizedChessBoard);
+	ChessBoard3D(const Point3& upperLeftCorner, const Point3& upperRightCorner, const double orthogonalAngle);
+	void Initialize(const Point3& upperLeftCorner, const Point3& upperRightCorner, const double orthogonalAngle);
+
 	Point3 upperLeftMiddlePoint;
 	Point3 rowVec;
 	Point3 colVec;
