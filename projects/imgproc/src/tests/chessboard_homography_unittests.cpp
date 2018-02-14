@@ -20,7 +20,7 @@ void visualize_projected_chessboard(const ChessBoard3D& cb)
 		}
 	}
 
-	vizWindow.Spin();
+	//vizWindow.Spin();
 }
 
 void run_test_1()

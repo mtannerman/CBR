@@ -16,7 +16,7 @@
         "squareFiltering": false,
         "dominantEdgeDirections": false,
         "rotatedImage": false,
-        "bandMatches": true
+        "bandMatches": false
     },
 	"runtimeParams":
 	{
