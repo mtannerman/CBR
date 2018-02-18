@@ -26,6 +26,9 @@ struct Matrix
 
     double Determinant() const;
 
+    void Chop();
+    Matrix Chopped() const;
+
     std::array<std::array<double, 2>, 2> mat;
 };
 
@@ -54,6 +57,9 @@ struct Matrix3
     Matrix3 Inverse() const;
 
     double Determinant() const;
+
+    void Chop();
+    Matrix3 Chopped() const;
 
     std::array<std::array<double, 3>, 3> mat;
 };

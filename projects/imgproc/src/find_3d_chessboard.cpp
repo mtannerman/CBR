@@ -37,9 +37,9 @@ Matrix3 ComputeRotationToXUnitVector(const Point3& p)
 	const double sinPhi = std::sin(phi);
 
 	return Matrix3(
-		cosTheta*cosPhi, cosTheta*sinPhi, -sinPhi,
+		cosTheta*cosPhi, cosTheta*sinPhi, sinTheta,
 		-sinPhi, cosPhi, 0,
-		cosPhi*sinTheta, sinPhi*sinTheta, cosTheta);
+		-cosPhi*sinTheta, -sinPhi*sinTheta, cosTheta);
 }
 
 Point3 GetUpperLeftCorner(const VectorizedChessBoard3D::ParamArray& pa)

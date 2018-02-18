@@ -2,6 +2,9 @@
 #include "math_utils/point.h"
 #include <cmath>
 
+#define FOR_ROW_COL(matrixSize, rowVar, colVar) for (int rowVar = 0; rowVar < matrixSize; ++rowVar) \
+ for (int colVar = 0; colVar < matrixSize; ++colVar) 
+
 namespace cbr {
 
     Matrix::Matrix(const double m11, const double m12,
@@ -82,6 +85,27 @@ Matrix Matrix::Eye()
     return Matrix(1., 0., 0., 1.);
 }
 
+void Matrix::Chop()
+{
+    auto maxValue = std::max(std::abs(mat[0][0]), std::abs(mat[0][1]));
+    maxValue = std::max(maxValue, std::abs(mat[1][0]));
+    maxValue = std::max(maxValue, std::abs(mat[1][1]));
+
+    FOR_ROW_COL(2,row,col) {
+        if (mat[row][col] != 0.0 && std::abs(maxValue/mat[row][col]) > 1e6) {
+            mat[row][col] = 0.;
+        }
+    }
+}
+
+Matrix Matrix::Chopped() const
+{
+    auto ret  = *this;
+    ret.Chop();
+    return ret;
+}
+
+
 Point operator*(const Matrix& m, const Point& p)
 {
     return Point(
@@ -91,7 +115,7 @@ Point operator*(const Matrix& m, const Point& p)
 
 std::ostream& operator<<(std::ostream& os, const Matrix& m)
 {
-    return os << "{{" << m(0, 0) << "," << m(0,1) << "},{" << m(1,0) << "," << m(1,1) << "}}";
+    return os << "\n" << m(0, 0) << "," << m(0,1) << "\n" << m(1,0) << "," << m(1,1);
 }
 
 
@@ -192,12 +216,33 @@ Point3 operator*(const Matrix3& m, const Point3& p)
         m(2,0) * p.x + m(2,1) * p.y + m(2,2) * p.z);
 }
 
+void Matrix3::Chop()
+{
+    auto maxValue = mat[0][0];
+    FOR_ROW_COL(3,row,col) {
+        maxValue = std::max(maxValue, mat[row][col]);
+    }
+
+    FOR_ROW_COL(3,row,col) {
+        if (mat[row][col] != 0.0 && std::abs(maxValue/mat[row][col]) > 1e6) {
+            mat[row][col] = 0.;
+        }
+    }
+}
+
+Matrix3 Matrix3::Chopped() const
+{
+    auto ret  = *this;
+    ret.Chop();
+    return ret;
+}
+
 std::ostream& operator<<(std::ostream& os, const Matrix3& m)
 {
-    return os << "{{" << 
-        m(0,0) << "," << m(0,1) << "," << m(0,2) << "},{" <<
-        m(1,0) << "," << m(1,1) << "," << m(1,2) << "},{" << 
-        m(2,0) << "," << m(2,1) << "," << m(2,2) << "}}";
+    return os << "\n" << 
+        m(0,0) << "," << m(0,1) << "," << m(0,2) << "\n" <<
+        m(1,0) << "," << m(1,1) << "," << m(1,2) << "\n" << 
+        m(2,0) << "," << m(2,1) << "," << m(2,2) << "";
 }
 
 }
