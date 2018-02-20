@@ -33,7 +33,7 @@ private:
 	LogArchiver() 
 	{
 		const auto path = LogArchivePath();
-		std::cout << "Creating LogArchiver" << std::endl;
+		// std::cout << "Creating LogArchiver" << std::endl;
 		THROW_IF(!CbrCreateDirectory(path), FileOperationFailure, STR("Couldn't create directory: " << path));
 		ofs.open(STR(path << "/log.txt"));
 		THROW_IF(!ofs.is_open(), FileOperationFailure, "Couldn't open log stream");

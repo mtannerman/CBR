@@ -26,6 +26,7 @@ std::array<std::array<Point, 8>, 8> find_3d_chessboard(const std::vector<Point>&
 
 Matrix3 ComputeRotationToXUnitVector(const Point3& p)
 {
+	THROW_IF(p.IsNull(), BadFunctionInput, "");
 	const auto v = p.Normalized();
 
 	const double phi = std::atan2(v.y, v.x);

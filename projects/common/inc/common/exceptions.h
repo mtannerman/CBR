@@ -9,11 +9,15 @@
 		'\t' << "Line: " << __LINE__ << "\n" <<\
 		'\t' << "Function: " << __FUNCTION__ << "\n" <<\
 		'\t' << "Message: " << message);\
-	debug_break();\
+	/*debug_break()*/;\
 	throw exceptionType(message, __FUNCTION__, __FILE__, __LINE__); 
 
 #define ASSERT(expression, message) if (!(expression)) { THROW(Assertion, message); }
-#define TEST_ASSERT(expression, message) if (!(expression)) { THROW(TestAssertion, message); }
+#define TEST_ASSERT(expression, message) if (!(expression)) { THROW(TestAssertion, message); } else { LOG(__FUNCTION__ << " PASSED"); }
+#define ASSERT_THROWN_EXCEPTION(command, exceptionType, message) { try { command; }\
+ 	catch (const exceptionType& ex) { LOG(__FUNCTION__ << " PASSED"); }\
+	catch(...) { THROW(TestAssertion, message); }}
+
 #define THROW_IF(expression, exceptionType, message) if ((expression)) { THROW(exceptionType, message); }
 
 #if _WIN32
