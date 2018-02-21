@@ -21,9 +21,9 @@
 #define THROW_IF(expression, exceptionType, message) if ((expression)) { THROW(exceptionType, message); }
 
 #if _WIN32
-	#define NOEXCEPT
+#	define NOEXCEPT
 #elif __GNUG__
-	#define NOEXCEPT noexcept
+#	define NOEXCEPT noexcept
 #endif
 
 namespace cbr

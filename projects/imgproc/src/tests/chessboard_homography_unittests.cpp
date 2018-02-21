@@ -13,13 +13,18 @@ void visualize_projected_chessboard(const ChessBoard3D& cb)
 	const std::string imageName = STR("run_chessboard_homography_tests");
     viz::Visualizer2D vizWindow(imageName);
 
+	// std::stringstream os; os << "{";
 	for (int row = 0; row < 8; ++row) {
 		for (int col = 0; col < 8; ++col) {
 			const auto middlePoint = 500. * cb.MiddlePointProjection(row, col);
-			LOG(DESC(middlePoint));
+			const auto p = cb.MiddlePointPosition(row, col);
+			// os << '{' << p.x << ", " << p.y << ", " << p.z << "}" << (row == 7 && col == 7 ? "" : ",");
 			vizWindow.AddCircle(int(middlePoint.x), int(middlePoint.y), 5, viz::Color::red());
 		}
 	}
+	// os << "}";
+
+	// LOG("middlePoints: \n" << os.str());	
 
 	vizWindow.Spin();
 }
@@ -103,6 +108,7 @@ void run_chessboard_homography_tests()
 	run_test_5();
 	run_test_6();
 	run_test_7();
+	run_visualization();
 }
 
 }   // namespace test

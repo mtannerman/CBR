@@ -47,6 +47,7 @@ Point3 ComputeLowerLeftCorner(const Point3& upperLeftCorner,
 
 struct ChessBoard3D
 {
+	ChessBoard3D() = default;
 	ChessBoard3D(const VectorizedChessBoard3D& vectorizedChessBoard);
 	ChessBoard3D(const Point3& upperLeftCorner, const Point3& upperRightCorner, const double orthogonalAngle);
 	void Initialize(const Point3& upperLeftCorner, const Point3& upperRightCorner, const double orthogonalAngle);
@@ -66,6 +67,12 @@ struct ChessBoard3D
 	double DistanceFromMiddlePoints(const std::vector<Point>& middlePoints) const;
 };
 
-std::array<std::array<Point, 8>, 8> find_3d_chessboard(const std::vector<Point>& middlePoints);
+struct ChessBoardFinder
+{
+	static VectorizedChessBoard3D InitialChessBoard();
+	double ComputeShrinkageParameter(const std::vector<Point>& middlePoints) const;
+	ChessBoardFinder() = default;
+	ChessBoard3D Find(const std::vector<Point>& middlePoints);
+};
 
 }   // namespace cbr

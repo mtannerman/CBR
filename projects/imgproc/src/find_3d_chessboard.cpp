@@ -19,11 +19,6 @@ VectorizedChessBoard3D::VectorizedChessBoard3D(const ChessBoard3D& cb)
 	// params[int(UPPER_RIGHT_CORNER_Z)] = 
 }
 
-std::array<std::array<Point, 8>, 8> find_3d_chessboard(const std::vector<Point>& middlePoints)
-{
-    return std::array<std::array<Point, 8>, 8>();
-}
-
 Matrix3 ComputeRotationToXUnitVector(const Point3& p)
 {
 	THROW_IF(p.IsNull(), BadFunctionInput, "");
@@ -86,6 +81,7 @@ void ChessBoard3D::Initialize(const Point3& upperLeftCorner,
 	LOG("initialized chessboard: ");
 	LOG(DESC(rowVec));
 	LOG(DESC(colVec));
+	LOG(DESC(colVec.Norm()));
 	LOG(DESC(upperLeftMiddlePoint));
 }
 
@@ -109,7 +105,6 @@ Point3 ChessBoard3D::MiddlePointPosition(const int rowIndex, const int colIndex)
 
 Point ChessBoard3D::MiddlePointProjection(const int rowIndex, const int colIndex) const {
 	const auto p = MiddlePointPosition(rowIndex, colIndex);
-
 	return Point(p.x, p.y) / p.z;
 }
 
@@ -153,6 +148,33 @@ double ChessBoard3D::DistanceFromMiddlePoints(const std::vector<Point>& middlePo
 		closestPoint->y = std::numeric_limits<double>::max();
 	}
 	return fullDistance;
+}
+
+VectorizedChessBoard3D ChessBoardFinder::InitialChessBoard()
+{
+	VectorizedChessBoard3D cb;
+	cb.params[(int)VectorizedChessBoard3D::Params::ORTHOGONAL_ANGLE] = 0.;
+	cb.params[(int)VectorizedChessBoard3D::Params::UPPER_LEFT_CORNER_X] = 2.;
+	cb.params[(int)VectorizedChessBoard3D::Params::UPPER_LEFT_CORNER_Y] = 2.;
+	cb.params[(int)VectorizedChessBoard3D::Params::UPPER_LEFT_CORNER_Z] = 5.;
+	cb.params[(int)VectorizedChessBoard3D::Params::UPPER_RIGHT_CORNER_X] = 2.;
+	cb.params[(int)VectorizedChessBoard3D::Params::UPPER_RIGHT_CORNER_Y] = -2.;
+	cb.params[(int)VectorizedChessBoard3D::Params::UPPER_RIGHT_CORNER_Z] = 5.;
+
+	return cb;
+}
+
+double ChessBoardFinder::ComputeShrinkageParameter(
+	const std::vector<Point>& middlePoints) const
+{
+
+}
+
+ChessBoard3D ChessBoardFinder::Find(const std::vector<Point>& middlePoints)
+{
+	ChessBoard3D cb;
+
+	return ChessBoard3D();
 }
 
 }   // namespace cbr
