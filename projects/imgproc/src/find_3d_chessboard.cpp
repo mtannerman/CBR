@@ -167,7 +167,7 @@ VectorizedChessBoard3D ChessBoardFinder::InitialChessBoard()
 double ChessBoardFinder::ComputeShrinkageParameter(
 	const std::vector<Point>& middlePoints) const
 {
-
+	return 0.0;
 }
 
 ChessBoard3D ChessBoardFinder::Find(const std::vector<Point>& middlePoints)
